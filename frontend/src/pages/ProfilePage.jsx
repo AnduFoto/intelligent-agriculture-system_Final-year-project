@@ -8,7 +8,15 @@ const ADMIN_TYPE_SPECIAL_WOREDA = 'SPECIAL_WOREDA';
 
 function ProfilePage() {
   const { refreshUser } = useAuth();
-  const { regions, isLoading: locationsLoading, getZonesForRegion, getSpecialWoredasForRegion, getWoredasForZone } = useLocationTree();
+  const {
+    regions,
+    isLoading: locationsLoading,
+    getZonesForRegion,
+    getSpecialWoredasForRegion,
+    getWoredasForZone,
+    getKebelesForWoreda,
+    getKebelesForSpecialWoreda,
+  } = useLocationTree();
 
   const [profile, setProfile] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -19,7 +27,6 @@ function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
-  // Change password section state
   const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_new_password: '' });
   const [pwErrors, setPwErrors] = useState(null);
   const [pwSaving, setPwSaving] = useState(false);
@@ -41,6 +48,7 @@ function ProfilePage() {
           zone: data.zone || '',
           woreda: data.woreda || '',
           special_woreda: data.special_woreda || '',
+          kebele: data.kebele || '',
         });
         setAdminType(data.special_woreda ? ADMIN_TYPE_SPECIAL_WOREDA : ADMIN_TYPE_ZONE);
       })
@@ -59,20 +67,29 @@ function ProfilePage() {
   const specialWoredas = formData.region ? getSpecialWoredasForRegion(formData.region) : [];
   const woredas = formData.region && formData.zone ? getWoredasForZone(formData.region, formData.zone) : [];
 
+  const kebeles =
+    adminType === ADMIN_TYPE_ZONE
+      ? (formData.region && formData.zone && formData.woreda
+          ? getKebelesForWoreda(formData.region, formData.zone, formData.woreda)
+          : [])
+      : (formData.region && formData.special_woreda
+          ? getKebelesForSpecialWoreda(formData.region, formData.special_woreda)
+          : []);
+
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleRegionChange = (value) => {
-    setFormData((prev) => ({ ...prev, region: value, zone: '', woreda: '', special_woreda: '' }));
+    setFormData((prev) => ({ ...prev, region: value, zone: '', woreda: '', special_woreda: '', kebele: '' }));
   };
 
   const handleAdminTypeChange = (type) => {
     setAdminType(type);
     if (type === ADMIN_TYPE_ZONE) {
-      setFormData((prev) => ({ ...prev, special_woreda: '' }));
+      setFormData((prev) => ({ ...prev, special_woreda: '', kebele: '' }));
     } else {
-      setFormData((prev) => ({ ...prev, zone: '', woreda: '' }));
+      setFormData((prev) => ({ ...prev, zone: '', woreda: '', kebele: '' }));
     }
   };
 
@@ -92,13 +109,14 @@ function ProfilePage() {
       zone: adminType === ADMIN_TYPE_ZONE ? formData.zone || null : null,
       woreda: adminType === ADMIN_TYPE_ZONE ? formData.woreda || null : null,
       special_woreda: adminType === ADMIN_TYPE_SPECIAL_WOREDA ? formData.special_woreda || null : null,
+      kebele: formData.kebele || null,
     };
 
     try {
       const response = await authService.updateProfile(payload);
       setProfile(response.data);
       setSaveMessage('Profile updated successfully.');
-      refreshUser(); // Keep AuthContext's user data in sync (e.g. nav bar name)
+      refreshUser();
     } catch (err) {
       setErrors(err.response?.data?.errors || { non_field_errors: [err.response?.data?.detail || 'Update failed.'] });
     } finally {
@@ -127,7 +145,6 @@ function ProfilePage() {
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
 
-        {/* ---------- Profile Info ---------- */}
         <div className="bg-white rounded-lg shadow p-8">
           <h1 className="text-2xl font-semibold text-primary-700 mb-1">My Profile</h1>
           <p className="text-sm text-gray-500 mb-6">{profile.email} · {profile.role}</p>
@@ -140,7 +157,7 @@ function ProfilePage() {
           )}
 
           <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <TextField label="First Name" value={formData.first_name} onChange={(v) => handleFieldChange('first_name', v)} error={errors?.first_name?.[0]} />
               <TextField label="Last Name" value={formData.last_name} onChange={(v) => handleFieldChange('last_name', v)} error={errors?.last_name?.[0]} />
             </div>
@@ -200,7 +217,7 @@ function ProfilePage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Zone</label>
                       <select
                         value={formData.zone}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, zone: e.target.value, woreda: '' }))}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, zone: e.target.value, woreda: '', kebele: '' }))}
                         className={inputClass}
                       >
                         <option value="">Select a Zone</option>
@@ -216,7 +233,7 @@ function ProfilePage() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Woreda</label>
                         <select
                           value={formData.woreda}
-                          onChange={(e) => handleFieldChange('woreda', e.target.value)}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, woreda: e.target.value, kebele: '' }))}
                           className={inputClass}
                         >
                           <option value="">Select a Woreda</option>
@@ -235,7 +252,7 @@ function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Special Woreda</label>
                     <select
                       value={formData.special_woreda}
-                      onChange={(e) => handleFieldChange('special_woreda', e.target.value)}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, special_woreda: e.target.value, kebele: '' }))}
                       className={inputClass}
                     >
                       <option value="">Select a Special Woreda</option>
@@ -244,6 +261,24 @@ function ProfilePage() {
                       ))}
                     </select>
                     {errors?.special_woreda && <p className="text-xs text-red-600 mt-1">{errors.special_woreda[0]}</p>}
+                  </div>
+                )}
+
+                {((adminType === ADMIN_TYPE_ZONE && formData.woreda) ||
+                  (adminType === ADMIN_TYPE_SPECIAL_WOREDA && formData.special_woreda)) && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Kebele</label>
+                    <select
+                      value={formData.kebele}
+                      onChange={(e) => handleFieldChange('kebele', e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="">Select a Kebele</option>
+                      {kebeles.map((k) => (
+                        <option key={k.id} value={k.id}>{k.name}</option>
+                      ))}
+                    </select>
+                    {errors?.kebele && <p className="text-xs text-red-600 mt-1">{errors.kebele[0]}</p>}
                   </div>
                 )}
               </>
@@ -259,7 +294,6 @@ function ProfilePage() {
           </form>
         </div>
 
-        {/* ---------- Change Password ---------- */}
         <div className="bg-white rounded-lg shadow p-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Change Password</h2>
 

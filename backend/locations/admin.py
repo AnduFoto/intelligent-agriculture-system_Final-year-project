@@ -2,8 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
-
-from locations.models import Region, Zone, SpecialWoreda, Woreda
+from locations.models import Region, Zone, SpecialWoreda, Woreda, Kebele
 
 
 @admin.register(Region)
@@ -35,3 +34,16 @@ class WoredaAdmin(admin.ModelAdmin):
     def get_region(self, obj):
         return obj.zone.region
     get_region.short_description = 'Region'
+
+
+    from locations.models import Region, Zone, SpecialWoreda, Woreda, Kebele
+
+
+@admin.register(Kebele)
+class KebeleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'get_parent', 'created_at')
+    search_fields = ('name', 'woreda__name', 'special_woreda__name')
+
+    def get_parent(self, obj):
+        return obj.woreda if obj.woreda else obj.special_woreda
+    get_parent.short_description = 'Parent (Woreda / Special Woreda)'

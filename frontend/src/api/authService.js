@@ -9,6 +9,7 @@ export const authService = {
   changePassword: (data) => axiosInstance.post('/auth/change-password/', data),
   getProfile: () => axiosInstance.get('/auth/profile/'),
   updateProfile: (data) => axiosInstance.patch('/auth/profile/', data),
+  getMyKebeles: () => axiosInstance.get('/auth/my-kebeles/'),
 };
 
 export const locationService = {

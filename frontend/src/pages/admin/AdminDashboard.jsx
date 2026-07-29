@@ -24,6 +24,15 @@ function AdminDashboard() {
           </Card>
         </Link>
 
+        <Link to="/admin/officers">
+  <Card className="hover:shadow-md transition h-full">
+    <h3 className="font-semibold text-gray-800 mb-1">Officer Kebele Assignments</h3>
+    <p className="text-sm text-gray-500">
+      Assign Kebeles to Agriculture Officers to control their farmer visibility.
+    </p>
+  </Card>
+</Link>
+
         <Link to="/admin/locations">
           <Card className="hover:shadow-md transition h-full">
             <h3 className="font-semibold text-gray-800 mb-1">Location Management</h3>
@@ -32,7 +41,19 @@ function AdminDashboard() {
             </p>
           </Card>
         </Link>
+        <Link to="/admin/predict">
+          <Card className="hover:shadow-md transition h-full">
+            <h3 className="font-semibold text-gray-800 mb-1">Crop Disease Detection</h3>
+            <p className="text-sm text-gray-500">Upload a crop image to get an AI-powered diagnosis.</p>
+          </Card>
+        </Link>
 
+       <Link to="/admin/browse/kebeles">
+        <Card className="hover:shadow-md transition h-full">
+          <h3 className="font-semibold text-gray-800 mb-1">Browse Farmer Predictions</h3>
+          <p className="text-sm text-gray-500">Explore prediction activity by Kebele.</p>
+        </Card>
+      </Link>
         <Card className="h-full">
           <h3 className="font-semibold text-gray-800 mb-1">System Analytics</h3>
           <p className="text-sm text-gray-500 mb-3">

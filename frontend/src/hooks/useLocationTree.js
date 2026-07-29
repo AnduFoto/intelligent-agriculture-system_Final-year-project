@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { locationService } from '../api/authService';
 
 /**
- * Fetches the full Region -> Zone/SpecialWoreda -> Woreda tree once,
- * and exposes helpers to look up children given a selected parent —
- * powering cascading location dropdowns without per-level API calls.
+ * Fetches the full Region -> Zone/SpecialWoreda -> Woreda -> Kebele
+ * tree once, and exposes helpers to look up children given a
+ * selected parent — powering cascading location dropdowns without
+ * per-level API calls.
  */
 export function useLocationTree() {
   const [regions, setRegions] = useState([]);
@@ -47,6 +48,18 @@ export function useLocationTree() {
     return zone?.woredas ?? [];
   };
 
+  const getKebelesForWoreda = (regionId, zoneId, woredaId) => {
+    const woredas = getWoredasForZone(regionId, zoneId);
+    const woreda = woredas.find((w) => w.id === Number(woredaId));
+    return woreda?.kebeles ?? [];
+  };
+
+  const getKebelesForSpecialWoreda = (regionId, specialWoredaId) => {
+    const specialWoredas = getSpecialWoredasForRegion(regionId);
+    const specialWoreda = specialWoredas.find((sw) => sw.id === Number(specialWoredaId));
+    return specialWoreda?.kebeles ?? [];
+  };
+
   return {
     regions,
     isLoading,
@@ -54,5 +67,7 @@ export function useLocationTree() {
     getZonesForRegion,
     getSpecialWoredasForRegion,
     getWoredasForZone,
+    getKebelesForWoreda,
+    getKebelesForSpecialWoreda,
   };
 }

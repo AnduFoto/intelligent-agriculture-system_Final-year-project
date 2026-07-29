@@ -8,11 +8,13 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from locations.models import Region, Zone, SpecialWoreda, Woreda
+from locations.models import Region, Zone, SpecialWoreda, Woreda, Kebele
 from locations.serializers import (
     RegionSerializer,
     ZoneSerializer,
     SpecialWoredaSerializer,
     WoredaSerializer,
+    KebeleSerializer,
     RegionFullTreeSerializer,
 )
 from accounts.permissions import IsAdministrator
@@ -87,6 +89,22 @@ class WoredaDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Woreda.objects.select_related('zone', 'zone__region').all()
     serializer_class = WoredaSerializer
     permission_classes = [IsAdministratorOrReadOnly]
+from rest_framework.filters import SearchFilter
+
+
+class KebeleListCreateView(generics.ListCreateAPIView):
+    queryset = Kebele.objects.select_related('woreda', 'woreda__zone', 'woreda__zone__region', 'special_woreda', 'special_woreda__region').all()
+    serializer_class = KebeleSerializer
+    permission_classes = [IsAdministratorOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['woreda', 'special_woreda']
+    search_fields = ['name']
+
+
+class KebeleDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Kebele.objects.select_related('woreda', 'woreda__zone', 'woreda__zone__region', 'special_woreda', 'special_woreda__region').all()
+    serializer_class = KebeleSerializer
+    permission_classes = [IsAdministratorOrReadOnly]
 
 
 class RegionFullTreeView(APIView):
@@ -101,7 +119,7 @@ class RegionFullTreeView(APIView):
 
     def get(self, request, *args, **kwargs):
         regions = Region.objects.prefetch_related(
-            'zones__woredas', 'special_woredas'
+            'zones__woredas__kebeles', 'special_woredas__kebeles'
         ).all()
         serializer = RegionFullTreeSerializer(regions, many=True)
         return Response(serializer.data)

@@ -9,6 +9,8 @@ from locations.views import (
     SpecialWoredaDetailView,
     WoredaListCreateView,
     WoredaDetailView,
+    KebeleListCreateView,
+    KebeleDetailView,
     RegionFullTreeView,
 )
 
@@ -33,4 +35,8 @@ urlpatterns = [
     # ---------- Woredas ----------
     path('woredas/', WoredaListCreateView.as_view(), name='woreda-list-create'),
     path('woredas/<int:pk>/', WoredaDetailView.as_view(), name='woreda-detail'),
+
+    # ---------- Kebeles ----------
+    path('kebeles/', KebeleListCreateView.as_view(), name='kebele-list-create'),
+    path('kebeles/<int:pk>/', KebeleDetailView.as_view(), name='kebele-detail'),
 ]

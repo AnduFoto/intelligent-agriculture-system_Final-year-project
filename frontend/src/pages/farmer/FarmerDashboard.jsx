@@ -1,5 +1,6 @@
 import { useAuth } from '../../context/AuthContext';
 import Card from '../../components/ui/Card';
+import { Link } from 'react-router-dom';
 
 function FarmerDashboard() {
   const { user } = useAuth();
@@ -34,11 +35,12 @@ function FarmerDashboard() {
           description="Ask questions and share experiences with other farmers."
           note="Coming soon"
         />
-        <DashboardCard
-          title="Educational Content"
-          description="Read articles and guides on crop and disease management."
-          note="Coming soon"
-        />
+       <Link to="/farmer/predict">
+          <DashboardCard
+            title="Crop Disease Detection"
+            description="Upload a crop image to get an AI-powered diagnosis."
+          />
+        </Link>
       </div>
     </div>
   );

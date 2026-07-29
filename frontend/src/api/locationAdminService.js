@@ -20,4 +20,11 @@ export const locationAdminService = {
   createWoreda: (data) => axiosInstance.post('/locations/woredas/', data),
   updateWoreda: (id, data) => axiosInstance.patch(`/locations/woredas/${id}/`, data),
   deleteWoreda: (id) => axiosInstance.delete(`/locations/woredas/${id}/`),
+
+  listKebelesByWoreda: (woredaId) => axiosInstance.get('/locations/kebeles/', { params: { woreda: woredaId } }),
+  listKebelesBySpecialWoreda: (specialWoredaId) => axiosInstance.get('/locations/kebeles/', { params: { special_woreda: specialWoredaId } }),
+  createKebele: (data) => axiosInstance.post('/locations/kebeles/', data),
+  updateKebele: (id, data) => axiosInstance.patch(`/locations/kebeles/${id}/`, data),
+  deleteKebele: (id) => axiosInstance.delete(`/locations/kebeles/${id}/`),
+  searchKebeles: (query) => axiosInstance.get('/locations/kebeles/', { params: { search: query } }),
 };

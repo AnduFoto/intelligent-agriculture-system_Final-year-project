@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from accounts.models import User, RoleChoices, StatusChoices, LanguageChoices
-from locations.models import Region, Zone, Woreda, SpecialWoreda
+from locations.models import Region, Zone, Woreda, SpecialWoreda, Kebele
 
 
 class PublicRegistrationSerializer(serializers.ModelSerializer):
@@ -27,6 +27,8 @@ class PublicRegistrationSerializer(serializers.ModelSerializer):
         queryset=SpecialWoreda.objects.all(), required=False, allow_null=True
     )
 
+    kebele = serializers.PrimaryKeyRelatedField(queryset=Kebele.objects.all())
+
     language_preference = serializers.ChoiceField(
         choices=LanguageChoices.choices, default=LanguageChoices.ENGLISH
     )
@@ -37,7 +39,7 @@ class PublicRegistrationSerializer(serializers.ModelSerializer):
             'first_name', 'middle_name', 'last_name',
             'email', 'phone_number',
             'password', 'confirm_password',
-            'region', 'zone', 'woreda', 'special_woreda',
+            'region', 'zone', 'woreda', 'special_woreda', 'kebele',
             'language_preference',
         ]
 
@@ -69,6 +71,7 @@ class PublicRegistrationSerializer(serializers.ModelSerializer):
         zone = attrs.get('zone')
         woreda = attrs.get('woreda')
         special_woreda = attrs.get('special_woreda')
+        kebele = attrs.get('kebele')
 
         has_zone = zone is not None
         has_woreda = woreda is not None
@@ -102,6 +105,18 @@ class PublicRegistrationSerializer(serializers.ModelSerializer):
         if has_woreda and woreda.zone_id != zone.id:
             raise serializers.ValidationError(
                 {'woreda': "The selected Woreda does not belong to the selected Zone."}
+            )
+
+        # Kebele must belong to whichever Woreda or Special Woreda was
+        # actually selected.
+        if has_woreda and kebele.woreda_id != woreda.id:
+            raise serializers.ValidationError(
+                {'kebele': "The selected Kebele does not belong to the selected Woreda."}
+            )
+
+        if has_special and kebele.special_woreda_id != special_woreda.id:
+            raise serializers.ValidationError(
+                {'kebele': "The selected Kebele does not belong to the selected Special Woreda."}
             )
 
         return attrs
@@ -139,7 +154,9 @@ class AdminUserCreationSerializer(serializers.ModelSerializer):
 
     role = serializers.ChoiceField(choices=RoleChoices.choices)
 
-    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
+    region = serializers.PrimaryKeyRelatedField(
+        queryset=Region.objects.all(), required=False, allow_null=True
+    )
     zone = serializers.PrimaryKeyRelatedField(
         queryset=Zone.objects.all(), required=False, allow_null=True
     )
@@ -148,6 +165,9 @@ class AdminUserCreationSerializer(serializers.ModelSerializer):
     )
     special_woreda = serializers.PrimaryKeyRelatedField(
         queryset=SpecialWoreda.objects.all(), required=False, allow_null=True
+    )
+    kebele = serializers.PrimaryKeyRelatedField(
+        queryset=Kebele.objects.all(), required=False, allow_null=True
     )
 
     language_preference = serializers.ChoiceField(
@@ -161,7 +181,7 @@ class AdminUserCreationSerializer(serializers.ModelSerializer):
             'email', 'phone_number',
             'password', 'confirm_password',
             'role',
-            'region', 'zone', 'woreda', 'special_woreda',
+            'region', 'zone', 'woreda', 'special_woreda', 'kebele',
             'language_preference',
         ]
 
@@ -184,10 +204,42 @@ class AdminUserCreationSerializer(serializers.ModelSerializer):
                 {'confirm_password': "Passwords do not match."}
             )
 
+        role = attrs.get('role')
+
+        if role == RoleChoices.OFFICER:
+            # Officers have NO location chain at all. Explicitly reject
+            # any location fields being submitted for an Officer, so a
+            # client can't accidentally (or deliberately) attach a
+            # location that will simply be ignored — better to fail
+            # loudly than silently discard submitted data.
+            location_fields_submitted = any([
+                attrs.get('region'),
+                attrs.get('zone'),
+                attrs.get('woreda'),
+                attrs.get('special_woreda'),
+                attrs.get('kebele'),
+            ])
+            if location_fields_submitted:
+                raise serializers.ValidationError(
+                    {'non_field_errors': [
+                        "Officers do not have a location assigned at creation. "
+                        "Use the Kebele assignment feature after the account is created."
+                    ]}
+                )
+            return attrs
+
+        # Farmer or Administrator: full location chain required,
+        # exactly mirroring PublicRegistrationSerializer's validation.
         region = attrs.get('region')
         zone = attrs.get('zone')
         woreda = attrs.get('woreda')
         special_woreda = attrs.get('special_woreda')
+        kebele = attrs.get('kebele')
+
+        if not region:
+            raise serializers.ValidationError(
+                {'region': "Region is required for this role."}
+            )
 
         has_zone = zone is not None
         has_woreda = woreda is not None
@@ -221,6 +273,21 @@ class AdminUserCreationSerializer(serializers.ModelSerializer):
         if has_woreda and woreda.zone_id != zone.id:
             raise serializers.ValidationError(
                 {'woreda': "The selected Woreda does not belong to the selected Zone."}
+            )
+
+        if not kebele:
+            raise serializers.ValidationError(
+                {'kebele': "Kebele is required for this role."}
+            )
+
+        if has_woreda and kebele.woreda_id != woreda.id:
+            raise serializers.ValidationError(
+                {'kebele': "The selected Kebele does not belong to the selected Woreda."}
+            )
+
+        if has_special and kebele.special_woreda_id != special_woreda.id:
+            raise serializers.ValidationError(
+                {'kebele': "The selected Kebele does not belong to the selected Special Woreda."}
             )
 
         return attrs
@@ -372,20 +439,25 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     special_woreda = serializers.PrimaryKeyRelatedField(
         queryset=SpecialWoreda.objects.all(), required=False, allow_null=True
     )
+    kebele = serializers.PrimaryKeyRelatedField(
+        queryset=Kebele.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = User
         fields = [
             'first_name', 'middle_name', 'last_name', 'phone_number',
             'language_preference',
-            'region', 'zone', 'woreda', 'special_woreda',
+            'region', 'zone', 'woreda', 'special_woreda', 'kebele',
         ]
-
     def validate(self, attrs):
-        # Merge incoming changes with the existing instance's current
-        # values, since a PATCH-style partial update may omit some
-        # location fields entirely (e.g., only changing phone_number).
         instance = self.instance
+
+        # Officers have no location chain at all — skip this entire
+        # validation block for them, exactly mirroring the bypass in
+        # User.clean() itself (Step 2).
+        if instance.role == RoleChoices.OFFICER:
+            return attrs
 
         region = attrs.get('region', instance.region)
         zone = attrs.get('zone', instance.zone) if 'zone' in attrs or instance.zone else attrs.get('zone', None)
@@ -394,6 +466,11 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             attrs.get('special_woreda', instance.special_woreda)
             if 'special_woreda' in attrs or instance.special_woreda
             else attrs.get('special_woreda', None)
+        )
+        kebele = (
+            attrs.get('kebele', instance.kebele)
+            if 'kebele' in attrs or instance.kebele
+            else attrs.get('kebele', None)
         )
 
         has_zone = zone is not None
@@ -428,6 +505,21 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         if has_woreda and woreda.zone_id != zone.id:
             raise serializers.ValidationError(
                 {'woreda': "The selected Woreda does not belong to the selected Zone."}
+            )
+
+        if not kebele:
+            raise serializers.ValidationError(
+                {'kebele': "Kebele is required."}
+            )
+
+        if has_woreda and kebele.woreda_id != woreda.id:
+            raise serializers.ValidationError(
+                {'kebele': "The selected Kebele does not belong to the selected Woreda."}
+            )
+
+        if has_special and kebele.special_woreda_id != special_woreda.id:
+            raise serializers.ValidationError(
+                {'kebele': "The selected Kebele does not belong to the selected Special Woreda."}
             )
 
         return attrs
@@ -562,3 +654,93 @@ class UserStatusUpdateSerializer(serializers.Serializer):
                 "Status cannot be manually set to Pending Verification."
             )
         return value
+
+
+from locations.serializers import KebeleSerializer as LocationKebeleSerializer
+
+
+class OfficerKebeleAssignSerializer(serializers.Serializer):
+    """
+    Accepts a list of Kebele IDs to add to an Officer's assignment set.
+    Validates that every submitted ID actually exists, and that the
+    target user is genuinely an Officer (enforced in the view, not
+    here, since this serializer has no access to the target user —
+    see PredictionHistoryDetailView-style reasoning: keep the
+    serializer focused on shape/existence validation, leave identity
+    /role checks to the view where the target user is already known).
+    """
+    kebele_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=False
+    )
+
+    def validate_kebele_ids(self, value):
+        from locations.models import Kebele
+        existing_ids = set(Kebele.objects.filter(id__in=value).values_list('id', flat=True))
+        missing = set(value) - existing_ids
+        if missing:
+            raise serializers.ValidationError(
+                f"The following Kebele IDs do not exist: {sorted(missing)}"
+            )
+        return value
+
+
+class OfficerKebeleAssignmentDetailSerializer(serializers.Serializer):
+    """
+    One row of an Officer's assigned Kebeles, including WHEN and BY
+    WHOM the assignment was made — reads from the through model
+    directly, not from the Kebele itself.
+    """
+    id = serializers.IntegerField(source='kebele.id')
+    name = serializers.CharField(source='kebele.name')
+    woreda_name = serializers.SerializerMethodField()
+    special_woreda_name = serializers.SerializerMethodField()
+    assigned_at = serializers.DateTimeField()
+    assigned_by_email = serializers.SerializerMethodField()
+
+    def get_woreda_name(self, obj):
+        return obj.kebele.woreda.name if obj.kebele.woreda else None
+
+    def get_special_woreda_name(self, obj):
+        return obj.kebele.special_woreda.name if obj.kebele.special_woreda else None
+
+    def get_assigned_by_email(self, obj):
+        return obj.assigned_by.email if obj.assigned_by else None
+
+
+class OfficerKebeleListSerializer(serializers.ModelSerializer):
+    """
+    Read-only representation of a single Officer's currently assigned
+    Kebeles, each with its own assignment timestamp and assigner.
+    """
+    assigned_kebeles = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'assigned_kebeles']
+        read_only_fields = fields
+
+    def get_assigned_kebeles(self, obj):
+        assignments = obj.kebele_assignments.select_related(
+            'kebele', 'kebele__woreda', 'kebele__special_woreda', 'assigned_by'
+        ).order_by('-assigned_at')
+        return OfficerKebeleAssignmentDetailSerializer(assignments, many=True).data
+
+
+class KebeleOfficerAssignmentSerializer(serializers.Serializer):
+    """
+    One row of a Kebele's assigned Officers — the inverse view of
+    OfficerKebeleAssignmentDetailSerializer. Powers the "Detail" view
+    showing every Officer currently covering a given Kebele.
+    """
+    officer_id = serializers.IntegerField(source='officer.id')
+    officer_name = serializers.SerializerMethodField()
+    officer_email = serializers.CharField(source='officer.email')
+    assigned_at = serializers.DateTimeField()
+    assigned_by_email = serializers.SerializerMethodField()
+
+    def get_officer_name(self, obj):
+        return f"{obj.officer.first_name} {obj.officer.last_name}"
+
+    def get_assigned_by_email(self, obj):
+        return obj.assigned_by.email if obj.assigned_by else None

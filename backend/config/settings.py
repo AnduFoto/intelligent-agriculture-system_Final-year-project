@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'locations',
+    'predictions',
 ]
 
 MIDDLEWARE = [
@@ -120,6 +121,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+# =========================================================
+# MEDIA FILES (uploaded/stored images — e.g. prediction images)
+# =========================================================
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # =========================================================
 # DJANGO REST FRAMEWORK
 # =========================================================
@@ -171,3 +179,9 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
 # FRONTEND URL (for building verification/reset links)
 # =========================================================
 FRONTEND_URL = config('FRONTEND_URL')
+
+# =========================================================
+# AI DISEASE DETECTION SERVICE (external, independent system)
+# =========================================================
+AI_SERVICE_URL = config('AI_SERVICE_URL')
+AI_SERVICE_TIMEOUT = config('AI_SERVICE_TIMEOUT', default=30, cast=int)

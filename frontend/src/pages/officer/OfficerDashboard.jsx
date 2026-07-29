@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/AuthContext';
 import Card from '../../components/ui/Card';
-
+import { Link } from 'react-router-dom';
 function OfficerDashboard() {
   const { user } = useAuth();
 
@@ -12,6 +12,27 @@ function OfficerDashboard() {
       <p className="text-sm text-gray-500 mb-8">
         Here's an overview of your responsibilities.
       </p>
+      <Link to="/officer/my-kebeles">
+        <Card className="hover:shadow-md transition h-full">
+          <h3 className="font-semibold text-gray-800 mb-1">My Assigned Kebeles</h3>
+          <p className="text-sm text-gray-500">View the Kebeles you currently cover.</p>
+        </Card>
+      </Link>
+
+      <Link to="/officer/predict">
+        <Card className="hover:shadow-md transition h-full">
+          <h3 className="font-semibold text-gray-800 mb-1">Crop Disease Detection</h3>
+          <p className="text-sm text-gray-500">Upload a crop image to get an AI-powered diagnosis.</p>
+        </Card>
+      </Link>
+
+
+      <Link to="/officer/browse/kebeles">
+        <Card className="hover:shadow-md transition h-full">
+          <h3 className="font-semibold text-gray-800 mb-1">Browse Farmer Predictions</h3>
+          <p className="text-sm text-gray-500">Explore prediction activity by Kebele.</p>
+        </Card>
+      </Link>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <DashboardCard

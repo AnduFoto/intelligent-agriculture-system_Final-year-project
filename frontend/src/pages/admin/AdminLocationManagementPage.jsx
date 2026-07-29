@@ -9,8 +9,12 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 function AdminLocationManagementPage() {
   const [regions, setRegions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Navigation state: which level are we drilled into?
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
+  const [selectedWoreda, setSelectedWoreda] = useState(null);
+  const [selectedSpecialWoreda, setSelectedSpecialWoreda] = useState(null);
 
   const fetchRegions = useCallback(() => {
     setIsLoading(true);
@@ -22,19 +26,15 @@ function AdminLocationManagementPage() {
 
   useEffect(fetchRegions, [fetchRegions]);
 
-  // Keep selectedRegion's displayed name in sync if it gets renamed
-  // while we later navigate back into it.
   const handleRegionRenamed = (updated) => {
     fetchRegions();
-    if (selectedRegion?.id === updated.id) {
-      setSelectedRegion(updated);
-    }
+    if (selectedRegion?.id === updated.id) setSelectedRegion(updated);
   };
 
   return (
     <div>
       <h1 className="text-2xl font-semibold text-gray-800 mb-1">Location Management</h1>
-      <p className="text-sm text-gray-500 mb-6">Manage Regions, Zones, Special Woredas, and Woredas.</p>
+      <p className="text-sm text-gray-500 mb-6">Manage Regions, Zones, Special Woredas, Woredas, and Kebeles.</p>
 
       {!selectedRegion && (
         <RegionList
@@ -45,20 +45,38 @@ function AdminLocationManagementPage() {
         />
       )}
 
-      {selectedRegion && !selectedZone && (
+      {selectedRegion && !selectedZone && !selectedSpecialWoreda && (
         <RegionDetail
           region={selectedRegion}
           onBack={() => setSelectedRegion(null)}
           onSelectZone={setSelectedZone}
+          onSelectSpecialWoreda={setSelectedSpecialWoreda}
           onRegionRenamed={handleRegionRenamed}
         />
       )}
 
-      {selectedZone && (
+      {selectedZone && !selectedWoreda && (
         <ZoneDetail
           zone={selectedZone}
           onBack={() => setSelectedZone(null)}
+          onSelectWoreda={setSelectedWoreda}
           onZoneRenamed={(updated) => setSelectedZone(updated)}
+        />
+      )}
+
+      {selectedWoreda && (
+        <WoredaDetail
+          woreda={selectedWoreda}
+          onBack={() => setSelectedWoreda(null)}
+          onWoredaRenamed={(updated) => setSelectedWoreda(updated)}
+        />
+      )}
+
+      {selectedSpecialWoreda && (
+        <SpecialWoredaDetail
+          specialWoreda={selectedSpecialWoreda}
+          onBack={() => setSelectedSpecialWoreda(null)}
+          onSpecialWoredaRenamed={(updated) => setSelectedSpecialWoreda(updated)}
         />
       )}
     </div>
@@ -97,7 +115,7 @@ function EditableRow({ item, onSelect, onSave, onDelete, deleteWarning }) {
     try {
       const updated = await onSave(item, name.trim());
       setIsEditing(false);
-      if (updated) item.name = updated.name; // local sync for immediate display
+      if (updated) item.name = updated.name;
     } catch (err) {
       setError(err.response?.data?.errors?.name?.[0] || 'Failed to rename.');
     } finally {
@@ -154,6 +172,68 @@ function EditableRow({ item, onSelect, onSave, onDelete, deleteWarning }) {
         </button>
       </div>
     </li>
+  );
+}
+
+// ---------------------------------------------------------------
+// Reusable inline-editable page header (for detail-page titles)
+// ---------------------------------------------------------------
+
+function EditableHeader({ label, currentName, onSave }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(currentName);
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setError('');
+    setIsSaving(true);
+    try {
+      await onSave(draft.trim());
+      setIsEditing(false);
+    } catch (err) {
+      setError(err.response?.data?.errors?.name?.[0] || `Failed to rename ${label}.`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center gap-3">
+        {isEditing ? (
+          <>
+            <input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="border border-gray-300 rounded-md px-2 py-1 text-sm font-semibold"
+            />
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="text-xs bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-2.5 py-1 rounded"
+            >
+              {isSaving ? '...' : 'Save'}
+            </button>
+            <button onClick={() => { setIsEditing(false); setError(''); }} className="text-xs text-gray-500">
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 className="font-semibold text-gray-800">{currentName}</h2>
+            <button
+              onClick={() => { setDraft(currentName); setIsEditing(true); }}
+              className="text-xs text-gray-500 hover:text-primary-700"
+            >
+              Edit
+            </button>
+          </>
+        )}
+      </div>
+      {error && <Alert variant="error">{error}</Alert>}
+    </div>
   );
 }
 
@@ -228,7 +308,7 @@ function RegionList({ regions, isLoading, onSelect, onChanged }) {
                 onSelect={onSelect}
                 onSave={handleRename}
                 onDelete={handleDelete}
-                deleteWarning={`Delete Region "${r.name}"? This will also delete its Zones, Special Woredas, and Woredas.`}
+                deleteWarning={`Delete Region "${r.name}"? This will also delete its Zones, Special Woredas, Woredas, and Kebeles.`}
               />
             ))}
           </ul>
@@ -242,7 +322,7 @@ function RegionList({ regions, isLoading, onSelect, onChanged }) {
 // Region Detail: Zones + Special Woredas within a Region
 // ---------------------------------------------------------------
 
-function RegionDetail({ region, onBack, onSelectZone, onRegionRenamed }) {
+function RegionDetail({ region, onBack, onSelectZone, onSelectSpecialWoreda, onRegionRenamed }) {
   const [zones, setZones] = useState([]);
   const [specialWoredas, setSpecialWoredas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -310,23 +390,9 @@ function RegionDetail({ region, onBack, onSelectZone, onRegionRenamed }) {
   };
 
   const handleRenameRegion = async (newName) => {
-    setRegionEditError('');
-    setIsRegionSaving(true);
-    try {
-      const response = await locationAdminService.updateRegion(region.id, { name: newName });
-      onRegionRenamed(response.data);
-      setIsEditingRegion(false);
-    } catch (err) {
-      setRegionEditError(err.response?.data?.errors?.name?.[0] || 'Failed to rename Region.');
-    } finally {
-      setIsRegionSaving(false);
-    }
+    const response = await locationAdminService.updateRegion(region.id, { name: newName });
+    onRegionRenamed(response.data);
   };
-
-  const [isEditingRegion, setIsEditingRegion] = useState(false);
-  const [regionNameDraft, setRegionNameDraft] = useState(region.name);
-  const [regionEditError, setRegionEditError] = useState('');
-  const [isRegionSaving, setIsRegionSaving] = useState(false);
 
   return (
     <div>
@@ -334,36 +400,7 @@ function RegionDetail({ region, onBack, onSelectZone, onRegionRenamed }) {
         ← Back to Regions
       </button>
 
-      <div className="flex items-center gap-3 mb-4">
-        {isEditingRegion ? (
-          <>
-            <input
-              autoFocus
-              value={regionNameDraft}
-              onChange={(e) => setRegionNameDraft(e.target.value)}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm font-semibold"
-            />
-            <button
-              onClick={() => handleRenameRegion(regionNameDraft.trim())}
-              disabled={isRegionSaving}
-              className="text-xs bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-2.5 py-1 rounded"
-            >
-              {isRegionSaving ? '...' : 'Save'}
-            </button>
-            <button onClick={() => { setIsEditingRegion(false); setRegionEditError(''); }} className="text-xs text-gray-500">
-              Cancel
-            </button>
-          </>
-        ) : (
-          <>
-            <h2 className="font-semibold text-gray-800">{region.name}</h2>
-            <button onClick={() => { setRegionNameDraft(region.name); setIsEditingRegion(true); }} className="text-xs text-gray-500 hover:text-primary-700">
-              Edit
-            </button>
-          </>
-        )}
-      </div>
-      {regionEditError && <Alert variant="error">{regionEditError}</Alert>}
+      <EditableHeader label="Region" currentName={region.name} onSave={handleRenameRegion} />
 
       {isLoading ? (
         <LoadingSpinner message="Loading..." />
@@ -406,7 +443,7 @@ function RegionDetail({ region, onBack, onSelectZone, onRegionRenamed }) {
                       onSelect={onSelectZone}
                       onSave={handleRenameZone}
                       onDelete={handleDeleteZone}
-                      deleteWarning={`Delete Zone "${z.name}"? This will also delete its Woredas.`}
+                      deleteWarning={`Delete Zone "${z.name}"? This will also delete its Woredas and Kebeles.`}
                     />
                   ))}
                 </ul>
@@ -448,9 +485,10 @@ function RegionDetail({ region, onBack, onSelectZone, onRegionRenamed }) {
                     <EditableRow
                       key={sw.id}
                       item={sw}
+                      onSelect={onSelectSpecialWoreda}
                       onSave={handleRenameSpecialWoreda}
                       onDelete={handleDeleteSpecialWoreda}
-                      deleteWarning={`Delete Special Woreda "${sw.name}"?`}
+                      deleteWarning={`Delete Special Woreda "${sw.name}"? This will also delete its Kebeles.`}
                     />
                   ))}
                 </ul>
@@ -467,15 +505,10 @@ function RegionDetail({ region, onBack, onSelectZone, onRegionRenamed }) {
 // Zone Detail: Woredas within a Zone
 // ---------------------------------------------------------------
 
-function ZoneDetail({ zone, onBack, onZoneRenamed }) {
+function ZoneDetail({ zone, onBack, onSelectWoreda, onZoneRenamed }) {
   const [woredas, setWoredas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({ show: false, name: '', error: '' });
-
-  const [isEditingZone, setIsEditingZone] = useState(false);
-  const [zoneNameDraft, setZoneNameDraft] = useState(zone.name);
-  const [zoneEditError, setZoneEditError] = useState('');
-  const [isZoneSaving, setIsZoneSaving] = useState(false);
 
   const fetchWoredas = useCallback(() => {
     setIsLoading(true);
@@ -509,18 +542,9 @@ function ZoneDetail({ zone, onBack, onZoneRenamed }) {
     fetchWoredas();
   };
 
-  const handleRenameZone = async () => {
-    setZoneEditError('');
-    setIsZoneSaving(true);
-    try {
-      const response = await locationAdminService.updateZone(zone.id, { name: zoneNameDraft.trim(), region: zone.region });
-      onZoneRenamed(response.data);
-      setIsEditingZone(false);
-    } catch (err) {
-      setZoneEditError(err.response?.data?.errors?.name?.[0] || 'Failed to rename Zone.');
-    } finally {
-      setIsZoneSaving(false);
-    }
+  const handleRenameZone = async (newName) => {
+    const response = await locationAdminService.updateZone(zone.id, { name: newName, region: zone.region });
+    onZoneRenamed(response.data);
   };
 
   return (
@@ -529,36 +553,7 @@ function ZoneDetail({ zone, onBack, onZoneRenamed }) {
         ← Back to Region
       </button>
 
-      <div className="flex items-center gap-3 mb-4">
-        {isEditingZone ? (
-          <>
-            <input
-              autoFocus
-              value={zoneNameDraft}
-              onChange={(e) => setZoneNameDraft(e.target.value)}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm font-semibold"
-            />
-            <button
-              onClick={handleRenameZone}
-              disabled={isZoneSaving}
-              className="text-xs bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-2.5 py-1 rounded"
-            >
-              {isZoneSaving ? '...' : 'Save'}
-            </button>
-            <button onClick={() => { setIsEditingZone(false); setZoneEditError(''); }} className="text-xs text-gray-500">
-              Cancel
-            </button>
-          </>
-        ) : (
-          <>
-            <h2 className="font-semibold text-gray-800">{zone.name} — Woredas</h2>
-            <button onClick={() => { setZoneNameDraft(zone.name); setIsEditingZone(true); }} className="text-xs text-gray-500 hover:text-primary-700">
-              Edit
-            </button>
-          </>
-        )}
-      </div>
-      {zoneEditError && <Alert variant="error">{zoneEditError}</Alert>}
+      <EditableHeader label="Zone" currentName={zone.name} onSave={handleRenameZone} />
 
       <div className="flex justify-between items-center mb-3">
         <span className="text-sm font-semibold text-gray-700">Woredas</span>
@@ -594,9 +589,210 @@ function ZoneDetail({ zone, onBack, onZoneRenamed }) {
               <EditableRow
                 key={w.id}
                 item={w}
+                onSelect={onSelectWoreda}
                 onSave={handleRenameWoreda}
                 onDelete={handleDelete}
-                deleteWarning={`Delete Woreda "${w.name}"?`}
+                deleteWarning={`Delete Woreda "${w.name}"? This will also delete its Kebeles.`}
+              />
+            ))}
+          </ul>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------
+// Woreda Detail: Kebeles within a Woreda
+// ---------------------------------------------------------------
+
+function WoredaDetail({ woreda, onBack, onWoredaRenamed }) {
+  const [kebeles, setKebeles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [form, setForm] = useState({ show: false, name: '', error: '' });
+
+  const fetchKebeles = useCallback(() => {
+    setIsLoading(true);
+    locationAdminService
+      .listKebelesByWoreda(woreda.id)
+      .then((res) => setKebeles(res.data.results || res.data))
+      .finally(() => setIsLoading(false));
+  }, [woreda.id]);
+
+  useEffect(fetchKebeles, [fetchKebeles]);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      await locationAdminService.createKebele({ name: form.name, woreda: woreda.id });
+      setForm({ show: false, name: '', error: '' });
+      fetchKebeles();
+    } catch (err) {
+      setForm((p) => ({ ...p, error: err.response?.data?.errors?.name?.[0] || 'Failed to add Kebele.' }));
+    }
+  };
+
+  const handleRenameKebele = async (kebele, newName) => {
+    const response = await locationAdminService.updateKebele(kebele.id, { name: newName, woreda: woreda.id });
+    fetchKebeles();
+    return response.data;
+  };
+
+  const handleDelete = async (k) => {
+    await locationAdminService.deleteKebele(k.id);
+    fetchKebeles();
+  };
+
+  const handleRenameWoreda = async (newName) => {
+    const response = await locationAdminService.updateWoreda(woreda.id, { name: newName, zone: woreda.zone });
+    onWoredaRenamed(response.data);
+  };
+
+  return (
+    <div>
+      <button onClick={onBack} className="text-sm text-primary-600 hover:text-primary-700 mb-4">
+        ← Back to Zone
+      </button>
+
+      <EditableHeader label="Woreda" currentName={woreda.name} onSave={handleRenameWoreda} />
+
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-sm font-semibold text-gray-700">Kebeles</span>
+        <button
+          onClick={() => setForm((p) => ({ ...p, show: !p.show }))}
+          className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+        >
+          {form.show ? 'Cancel' : '+ Add Kebele'}
+        </button>
+      </div>
+
+      {form.show && (
+        <form onSubmit={handleAdd} className="flex gap-2 mb-3">
+          <input
+            value={form.name}
+            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+            placeholder="Kebele name"
+          />
+          <button type="submit" className="text-xs bg-primary-600 text-white px-3 rounded-md">Add</button>
+        </form>
+      )}
+      {form.error && <Alert variant="error">{form.error}</Alert>}
+
+      <Card>
+        {isLoading ? (
+          <LoadingSpinner message="Loading kebeles..." />
+        ) : kebeles.length === 0 ? (
+          <p className="text-sm text-gray-400 py-4 text-center">No kebeles yet.</p>
+        ) : (
+          <ul className="divide-y">
+            {kebeles.map((k) => (
+              <EditableRow
+                key={k.id}
+                item={k}
+                onSave={handleRenameKebele}
+                onDelete={handleDelete}
+                deleteWarning={`Delete Kebele "${k.name}"?`}
+              />
+            ))}
+          </ul>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------
+// Special Woreda Detail: Kebeles within a Special Woreda
+// ---------------------------------------------------------------
+
+function SpecialWoredaDetail({ specialWoreda, onBack, onSpecialWoredaRenamed }) {
+  const [kebeles, setKebeles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [form, setForm] = useState({ show: false, name: '', error: '' });
+
+  const fetchKebeles = useCallback(() => {
+    setIsLoading(true);
+    locationAdminService
+      .listKebelesBySpecialWoreda(specialWoreda.id)
+      .then((res) => setKebeles(res.data.results || res.data))
+      .finally(() => setIsLoading(false));
+  }, [specialWoreda.id]);
+
+  useEffect(fetchKebeles, [fetchKebeles]);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      await locationAdminService.createKebele({ name: form.name, special_woreda: specialWoreda.id });
+      setForm({ show: false, name: '', error: '' });
+      fetchKebeles();
+    } catch (err) {
+      setForm((p) => ({ ...p, error: err.response?.data?.errors?.name?.[0] || 'Failed to add Kebele.' }));
+    }
+  };
+
+  const handleRenameKebele = async (kebele, newName) => {
+    const response = await locationAdminService.updateKebele(kebele.id, { name: newName, special_woreda: specialWoreda.id });
+    fetchKebeles();
+    return response.data;
+  };
+
+  const handleDelete = async (k) => {
+    await locationAdminService.deleteKebele(k.id);
+    fetchKebeles();
+  };
+
+  const handleRenameSpecialWoreda = async (newName) => {
+    const response = await locationAdminService.updateSpecialWoreda(specialWoreda.id, { name: newName, region: specialWoreda.region });
+    onSpecialWoredaRenamed(response.data);
+  };
+
+  return (
+    <div>
+      <button onClick={onBack} className="text-sm text-primary-600 hover:text-primary-700 mb-4">
+        ← Back to Region
+      </button>
+
+      <EditableHeader label="Special Woreda" currentName={specialWoreda.name} onSave={handleRenameSpecialWoreda} />
+
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-sm font-semibold text-gray-700">Kebeles</span>
+        <button
+          onClick={() => setForm((p) => ({ ...p, show: !p.show }))}
+          className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+        >
+          {form.show ? 'Cancel' : '+ Add Kebele'}
+        </button>
+      </div>
+
+      {form.show && (
+        <form onSubmit={handleAdd} className="flex gap-2 mb-3">
+          <input
+            value={form.name}
+            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+            placeholder="Kebele name"
+          />
+          <button type="submit" className="text-xs bg-primary-600 text-white px-3 rounded-md">Add</button>
+        </form>
+      )}
+      {form.error && <Alert variant="error">{form.error}</Alert>}
+
+      <Card>
+        {isLoading ? (
+          <LoadingSpinner message="Loading kebeles..." />
+        ) : kebeles.length === 0 ? (
+          <p className="text-sm text-gray-400 py-4 text-center">No kebeles yet.</p>
+        ) : (
+          <ul className="divide-y">
+            {kebeles.map((k) => (
+              <EditableRow
+                key={k.id}
+                item={k}
+                onSave={handleRenameKebele}
+                onDelete={handleDelete}
+                deleteWarning={`Delete Kebele "${k.name}"?`}
               />
             ))}
           </ul>

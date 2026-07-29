@@ -62,20 +62,17 @@ class IsOfficerOrAdministrator(BasePermission):
         )
 
 
-class IsOwnerOrAdministrator(BasePermission):
+class IsOfficerOrAdministrator(BasePermission):
     """
-    Object-level permission: allows access if the requesting user IS
-    the object in question (e.g., viewing/editing their own profile),
-    or if the requesting user is an Administrator (who can manage any
-    user's account).
-
-    Intended for use alongside IsAuthenticated on views that operate
-    on a specific User instance (e.g., retrieve/update a single user
-    by ID in the Admin User Management views, Step 29).
+    Allows access to either Agriculture Officers or Administrators.
+    Useful for endpoints where both roles share the same capability
+    (e.g., moderation-adjacent actions in future modules).
     """
-    message = "You do not have permission to access this resource."
+    message = "Only Agriculture Officers or Administrators are permitted to perform this action."
 
-    def has_object_permission(self, request, view, obj):
-        if request.user.role == RoleChoices.ADMINISTRATOR:
-            return True
-        return obj == request.user
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role in (RoleChoices.OFFICER, RoleChoices.ADMINISTRATOR)
+        )

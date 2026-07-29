@@ -12,6 +12,10 @@ from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, Bl
 from django_filters.rest_framework import DjangoFilterBackend
 
 from accounts.models import User, EmailVerificationToken, StatusChoices
+from locations.models import Kebele
+from accounts.serializers import OfficerKebeleListSerializer, OfficerKebeleAssignSerializer
+from accounts.models import User, EmailVerificationToken, StatusChoices, RoleChoices, OfficerKebeleAssignment
+from accounts.serializers import OfficerKebeleListSerializer, OfficerKebeleAssignSerializer, KebeleOfficerAssignmentSerializer
 from accounts.serializers import (
     PublicRegistrationSerializer,
     AdminUserCreationSerializer,
@@ -26,7 +30,9 @@ from accounts.serializers import (
 from accounts.services import send_verification_email, send_password_reset_email
 from accounts.permissions import IsAdministrator
 from accounts.filters import UserFilter
-
+from accounts.models import User, EmailVerificationToken, StatusChoices, RoleChoices
+from accounts.permissions import IsAdministrator, IsFarmer, IsOfficer
+from accounts.serializers import OfficerKebeleListSerializer, OfficerKebeleAssignSerializer, KebeleOfficerAssignmentSerializer, OfficerKebeleAssignmentDetailSerializer
 class RegisterView(generics.CreateAPIView):
     """
     Public self-registration endpoint. Always creates a Farmer account
@@ -160,7 +166,8 @@ class ResendVerificationEmailView(APIView):
 
 
 
-    from rest_framework_simplejwt.views import TokenObtainPairView
+
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
@@ -294,10 +301,7 @@ class ResetPasswordView(APIView):
             status=status.HTTP_200_OK,
         )
     
-
-
-
-    from accounts.serializers import ProfileSerializer, ProfileUpdateSerializer
+from accounts.serializers import ProfileSerializer, ProfileUpdateSerializer
 
 
 class ProfileView(APIView):
@@ -333,7 +337,7 @@ class ProfileView(APIView):
 
 
 
-    from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 
@@ -453,3 +457,131 @@ class AdminUserStatusUpdateView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+
+class OfficerKebeleListView(APIView):
+    """
+    Administrator-only: list a specific Officer's currently assigned
+    Kebeles.
+    """
+    permission_classes = [IsAdministrator]
+
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            target_user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'detail': "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if target_user.role != RoleChoices.OFFICER:
+            return Response(
+                {'detail': "Kebele assignments only apply to Agriculture Officer accounts."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = OfficerKebeleListSerializer(target_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class OfficerKebeleAssignView(APIView):
+    """
+    Administrator-only: add one or more Kebeles to an Officer's
+    assignment set. Adding an already-assigned Kebele again is a
+    harmless no-op (M2M .add() is naturally idempotent).
+    """
+    permission_classes = [IsAdministrator]
+
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            target_user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'detail': "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if target_user.role != RoleChoices.OFFICER:
+            return Response(
+                {'detail': "Kebele assignments only apply to Agriculture Officer accounts."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = OfficerKebeleAssignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        kebele_ids = serializer.validated_data['kebele_ids']
+
+        kebeles = Kebele.objects.filter(id__in=kebele_ids)
+        for kebele in kebeles:
+            OfficerKebeleAssignment.objects.get_or_create(
+                officer=target_user,
+                kebele=kebele,
+                defaults={'assigned_by': request.user},
+            )
+
+        response_serializer = OfficerKebeleListSerializer(target_user)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+class OfficerKebeleRemoveView(APIView):
+    """
+    Administrator-only: remove one specific Kebele from an Officer's
+    assignment set.
+    """
+    permission_classes = [IsAdministrator]
+
+    def delete(self, request, pk, kebele_id, *args, **kwargs):
+        try:
+            target_user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'detail': "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if target_user.role != RoleChoices.OFFICER:
+            return Response(
+                {'detail': "Kebele assignments only apply to Agriculture Officer accounts."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            kebele = Kebele.objects.get(pk=kebele_id)
+        except Kebele.DoesNotExist:
+            return Response({'detail': "Kebele not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        target_user.assigned_kebeles.remove(kebele)
+
+        response_serializer = OfficerKebeleListSerializer(target_user)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+class KebeleOfficersView(APIView):
+    """
+    Administrator-only: list every Officer currently assigned to a
+    specific Kebele, each with when and by whom the assignment was
+    made. Powers the "Detail" view on the Kebele assignment UI, since
+    a single Kebele can be covered by multiple Officers at once.
+    """
+    permission_classes = [IsAdministrator]
+
+    def get(self, request, kebele_id, *args, **kwargs):
+        try:
+            kebele = Kebele.objects.get(pk=kebele_id)
+        except Kebele.DoesNotExist:
+            return Response({'detail': "Kebele not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        assignments = OfficerKebeleAssignment.objects.filter(kebele=kebele).select_related(
+            'officer', 'assigned_by'
+        ).order_by('-assigned_at')
+        serializer = KebeleOfficerAssignmentSerializer(assignments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class MyAssignedKebelesView(APIView):
+    """
+    Self-service, read-only: lets an authenticated Officer view their
+    own assigned Kebeles (name, parent, when assigned, by whom) —
+    without needing an Administrator to tell them their coverage area.
+    """
+    permission_classes = [IsOfficer]
+
+    def get(self, request, *args, **kwargs):
+        assignments = request.user.kebele_assignments.select_related(
+            'kebele', 'kebele__woreda', 'kebele__special_woreda', 'assigned_by'
+        ).order_by('-assigned_at')
+        serializer = OfficerKebeleAssignmentDetailSerializer(assignments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

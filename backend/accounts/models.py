@@ -13,6 +13,7 @@ from django.db import models
 from accounts.managers import UserManager
 
 
+
 class RoleChoices(models.TextChoices):
     FARMER = 'FARMER', 'Farmer'
     OFFICER = 'OFFICER', 'Agriculture Officer'
@@ -99,6 +100,28 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True
     )
 
+    kebele = models.ForeignKey(
+        'locations.Kebele',
+        on_delete=models.PROTECT,
+        related_name='users',
+        null=True,
+        blank=True
+    )
+
+    # Only meaningful for OFFICER accounts. A Farmer or Administrator
+    # will never have entries here — their single location chain
+    # (region/zone/woreda/special_woreda/kebele above) is what applies
+    # to them instead. Enforcement that only Officers may have
+    # assignments here happens at the serializer/view level (Phase 2,
+    # Decision 2), not via a database constraint.
+    assigned_kebeles = models.ManyToManyField(
+        'locations.Kebele',
+        through='OfficerKebeleAssignment',
+        through_fields=('officer', 'kebele'),
+        related_name='assigned_officers',
+        blank=True
+    )
+
     # ---------- Django auth-required flags ----------
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -131,8 +154,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Enforce the location business rule:
         exactly (zone + woreda) OR (special_woreda) — never both, never neither.
+
+        This full location chain (including kebele) applies ONLY to
+        FARMER and ADMINISTRATOR roles. OFFICER accounts have no
+        location chain at all — their geographic relevance comes
+        entirely through the separate assigned_kebeles M2M field
+        instead, so this validation is skipped entirely for them.
         """
         super().clean()
+
+        if self.role == RoleChoices.OFFICER:
+            return
 
         has_zone_path = bool(self.zone) and bool(self.woreda)
         has_partial_zone_path = bool(self.zone) != bool(self.woreda)
@@ -167,6 +199,23 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.special_woreda and self.special_woreda.region_id != self.region_id:
             raise ValidationError(
                 "The selected Special Woreda does not belong to the selected Region."
+            )
+
+        # Kebele check: required, and must belong to whichever Woreda
+        # or Special Woreda was actually selected.
+        if not self.kebele:
+            raise ValidationError(
+                "Kebele is required."
+            )
+
+        if self.woreda and self.kebele.woreda_id != self.woreda_id:
+            raise ValidationError(
+                "The selected Kebele does not belong to the selected Woreda."
+            )
+
+        if self.special_woreda and self.kebele.special_woreda_id != self.special_woreda_id:
+            raise ValidationError(
+                "The selected Kebele does not belong to the selected Special Woreda."
             )
         
 
@@ -255,3 +304,37 @@ class PasswordResetToken(models.Model):
         self.used = True
         self.used_at = timezone.now()
         self.save(update_fields=['used', 'used_at'])
+
+
+class OfficerKebeleAssignment(models.Model):
+    """
+    Through model for the assigned_kebeles M2M relationship. Recording
+    WHEN each assignment was made and WHICH Administrator made it,
+    since a Kebele can be assigned to multiple Officers simultaneously
+    and each individual assignment needs its own history.
+    """
+    officer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='kebele_assignments'
+    )
+    kebele = models.ForeignKey(
+        'locations.Kebele',
+        on_delete=models.CASCADE,
+        related_name='officer_assignments'
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+'
+    )
+
+    class Meta:
+        unique_together = ('officer', 'kebele')
+        ordering = ['-assigned_at']
+
+    def __str__(self):
+        return f"{self.officer.email} -> {self.kebele.name}"

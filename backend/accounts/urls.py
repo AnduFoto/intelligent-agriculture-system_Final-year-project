@@ -15,6 +15,11 @@ from accounts.views import (
     AdminUserListView,
     AdminUserDetailView,
     AdminUserStatusUpdateView,
+    OfficerKebeleListView,
+    OfficerKebeleAssignView,
+    OfficerKebeleRemoveView,
+    KebeleOfficersView,
+    MyAssignedKebelesView,
 )
 
 app_name = 'accounts'
@@ -43,4 +48,11 @@ urlpatterns = [
     path('admin/users/create/', AdminCreateUserView.as_view(), name='admin-user-create'),
     path('admin/users/<int:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:pk>/status/', AdminUserStatusUpdateView.as_view(), name='admin-user-status'),
+
+    # ---------- Administrator: Officer-Kebele Assignment ----------
+    path('admin/users/<int:pk>/kebeles/', OfficerKebeleListView.as_view(), name='officer-kebele-list'),
+    path('admin/users/<int:pk>/kebeles/assign/', OfficerKebeleAssignView.as_view(), name='officer-kebele-assign'),
+    path('admin/users/<int:pk>/kebeles/<int:kebele_id>/', OfficerKebeleRemoveView.as_view(), name='officer-kebele-remove'),
+    path('admin/kebeles/<int:kebele_id>/officers/', KebeleOfficersView.as_view(), name='kebele-officers'),
+    path('my-kebeles/', MyAssignedKebelesView.as_view(), name='my-kebeles'),
 ]

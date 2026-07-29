@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from accounts.models import User, EmailVerificationToken, PasswordResetToken
-
+from accounts.models import User, EmailVerificationToken, PasswordResetToken, OfficerKebeleAssignment
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -21,10 +21,10 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('first_name', 'middle_name', 'last_name', 'phone_number', 'language_preference')
         }),
         ('Role & Status', {'fields': ('role', 'status')}),
-        ('Location', {'fields': ('region', 'zone', 'woreda', 'special_woreda')}),
+        ('Location', {'fields': ('region', 'zone', 'woreda', 'special_woreda', 'kebele')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined', 'updated_at')}),
-    )
+      )
 
     add_fieldsets = (
         (None, {
@@ -32,7 +32,7 @@ class UserAdmin(BaseUserAdmin):
             'fields': (
                 'email', 'password1', 'password2',
                 'first_name', 'last_name', 'phone_number',
-                'role', 'status', 'region', 'zone', 'woreda', 'special_woreda',
+                'role', 'status', 'region', 'zone', 'woreda', 'special_woreda', 'kebele',
             ),
         }),
     )
@@ -54,3 +54,10 @@ class PasswordResetTokenAdmin(admin.ModelAdmin):
     list_filter = ('used',)
     search_fields = ('user__email',)
     readonly_fields = ('token', 'created_at')
+
+@admin.register(OfficerKebeleAssignment)
+class OfficerKebeleAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('officer', 'kebele', 'assigned_at', 'assigned_by')
+    list_filter = ('assigned_at',)
+    search_fields = ('officer__email', 'kebele__name')
+    readonly_fields = ('assigned_at',)
