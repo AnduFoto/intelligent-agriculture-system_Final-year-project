@@ -15,7 +15,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =========================================================
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+ALLOWED_HOSTS = [h for h in config('ALLOWED_HOSTS', default='*').split(',') if h]
+if DEBUG:
+    ALLOWED_HOSTS.extend(['*', 'localhost', '127.0.0.1', '192.168.43.145'])
+    CORS_ALLOW_ALL_ORIGINS = True
 
 # =========================================================
 # APPLICATION DEFINITION
@@ -39,6 +42,13 @@ INSTALLED_APPS = [
     'accounts',
     'locations',
     'predictions',
+    'consultations',
+    'education',
+    'notifications',
+    'reports',
+    'administration',
+    'chat',
+    'community',
 ]
 
 MIDDLEWARE = [

@@ -20,7 +20,10 @@ from accounts.views import (
     OfficerKebeleRemoveView,
     KebeleOfficersView,
     MyAssignedKebelesView,
+    KebeleLeadOfficerView,
+    MyLeadKebeleView,
 )
+from accounts.views_dashboard import DashboardStatsView
 
 app_name = 'accounts'
 
@@ -55,4 +58,7 @@ urlpatterns = [
     path('admin/users/<int:pk>/kebeles/<int:kebele_id>/', OfficerKebeleRemoveView.as_view(), name='officer-kebele-remove'),
     path('admin/kebeles/<int:kebele_id>/officers/', KebeleOfficersView.as_view(), name='kebele-officers'),
     path('my-kebeles/', MyAssignedKebelesView.as_view(), name='my-kebeles'),
+    path('admin/kebeles/<int:kebele_id>/lead-officer/', KebeleLeadOfficerView.as_view(), name='kebele-lead-officer'),
+    path('my-lead-kebele/', MyLeadKebeleView.as_view(), name='my-lead-kebele'),
+    path('dashboard-stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
 ]

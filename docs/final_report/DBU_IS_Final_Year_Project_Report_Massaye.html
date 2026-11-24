@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DBU IS Final Year Project Report - Massaye (55-60 Pages)</title>
+<style>
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    line-height: 1.6;
+    color: #111;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px 60px;
+    background: #fff;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  }
+  h1 {
+    text-align: center;
+    font-size: 16pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 50px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 8px;
+    page-break-before: always;
+  }
+  h2 {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 28px;
+    margin-bottom: 14px;
+  }
+  h3 {
+    text-align: center;
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  p {
+    text-align: justify;
+    margin-bottom: 14px;
+  }
+  .placeholder-box {
+    border: 2px dashed #888;
+    background: #fbfbfb;
+    padding: 35px 20px;
+    text-align: center;
+    margin: 24px 0 10px 0;
+    font-weight: bold;
+    color: #444;
+  }
+  .placeholder-box small {
+    display: block;
+    font-weight: normal;
+    color: #777;
+    margin-top: 8px;
+  }
+  .caption {
+    text-align: center;
+    font-weight: bold;
+    font-size: 10.5pt;
+    margin-bottom: 4px;
+  }
+  .desc {
+    text-align: justify;
+    font-style: italic;
+    font-size: 10pt;
+    margin-bottom: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 10pt;
+  }
+  th, td {
+    border: 1px solid #444;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: center;
+  }
+  pre {
+    background: #f4f4f4;
+    padding: 12px;
+    font-family: Consolas, monospace;
+    font-size: 9.5pt;
+    border: 1px solid #ddd;
+    overflow-x: auto;
+  }
+  @media print {
+    body {
+      box-shadow: none;
+      margin: 0;
+      padding: 0;
+      max-width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+<p>DEBRE BERHAN UNIVERSITY</p>
+<p>COLLEGE OF COMPUTING</p>
+<p>DEPARTMENT OF INFORMATION SYSTEMS</p>
+<p>Massaye: Intelligent Agriculture System With AI-Powered Crop Disease Diagnosis And Extension Advisory</p>
+<p>By</p>
+<p>[Full Name of Student(s) and Address]</p>
+<p>Department of Information Systems</p>
+<p>College of Computing</p>
+<p>November, 2026</p>
+<p>Debre Berhan, Ethiopia</p>
+<h1>DECLARATION</h1>
+<p>I/We hereby declare that this final year project report entitled "Massaye: Intelligent Agriculture System With AI-Powered Crop Disease Diagnosis And Extension Advisory" is our original work, developed under the scholarly guidance and academic supervision of our designated project advisor, and has not been presented or submitted previously to Debre Berhan University or any other academic institution for the award of any academic degree, diploma, or qualification. All primary and secondary materials, domain frameworks, scientific algorithms, and statistical sources utilized within this study have been acknowledged in the text and referenced according to IEEE guidelines.</p>
+<p>Student Full Name: ____________________________________    Signature: ______________    Date: __________</p>
+<p>Student Full Name: ____________________________________    Signature: ______________    Date: __________</p>
+<p>Student Full Name: ____________________________________    Signature: ______________    Date: __________</p>
+<h1>APPROVAL SHEET</h1>
+<p>This is to certify that the final year project report entitled "Massaye: Intelligent Agriculture System With AI-Powered Crop Disease Diagnosis And Extension Advisory" submitted by the aforementioned students in partial fulfillment of the requirements for the Degree of Bachelor of Science in Information Systems at Debre Berhan University, College of Computing, Department of Information Systems, is accepted and approved for final oral defense.</p>
+<p>1. Designated Advisor:     ____________________________    Signature: ______________    Date: __________</p>
+<p>2. Designated Co-Advisor:  ____________________________    Signature: ______________    Date: __________</p>
+<p>3. Internal Examiner:      ____________________________    Signature: ______________    Date: __________</p>
+<p>4. External Examiner:      ____________________________    Signature: ______________    Date: __________</p>
+<p>5. Department Head:        ____________________________    Signature: ______________    Date: __________</p>
+<h1>DEDICATION</h1>
+<p>This work is dedicated to the millions of industrious smallholder farmers throughout Ethiopia, whose tireless labor, resilience, and stewardship of the soil nourish our nation.</p>
+<h1>ACKNOWLEDGMENTS</h1>
+<p>First and foremost, we offer our profound praise and thanksgiving to the Almighty for granting us perseverance, wisdom, vitality, and intellectual endurance throughout the design, software development, and academic compilation of this project.</p>
+<p>We extend our deepest and most sincere gratitude to our project advisor for their scholarly mentorship, patient encouragement, methodological critique, and continuous technical reviews. Their academic insight was crucial in steering this project toward rigorous software engineering standards.</p>
+<p>Our gratitude also goes to the faculty members of the Department of Information Systems and the College of Computing at Debre Berhan University, who provided us with foundational competencies in database modeling, object-oriented software engineering, web engineering, and enterprise systems design.</p>
+<p>We express our sincere thanks to the agricultural extension workers (Development Agents) and Woreda supervisors who graciously gave their time during our requirement elicitation sessions, providing operational insights into rural Kebele realities. Finally, we thank our beloved families and fellow classmates for their moral and emotional support.</p>
+<h1>ABSTRACT</h1>
+<p>Agriculture represents the foundational pillar of the Ethiopian economy, sustaining over 68% of the national labor force and contributing roughly 32% to the national Gross Domestic Product (GDP). Nonetheless, smallholder cereal and horticultural productivity remains persistently hindered by recurring foliar crop diseases such as Maize Northern Leaf Blight, Wheat Stem Rust, Tomato Early Blight, and Potato Late Blight, which regularly inflict severe harvest losses ranging between 30% and 100%. The conventional public agricultural extension system in Ethiopia relies on physical farm visits by Kebele Development Agents (DAs). This legacy operational model suffers from critical structural bottlenecks, including overwhelming agent-to-farmer ratios (frequently exceeding 1:1,000), rugged topography, impassable rural feeder roads during the rainy season, slow disease detection cycles, and paper-based ledgers that preclude real-time epidemiological monitoring.</p>
+<p>To resolve these challenges, this project engineers Massaye, an end-to-end intelligent agricultural advisory and management ecosystem tailored to the Ethiopian agricultural landscape. Massaye couples computer vision deep learning inference with an enterprise multi-tier tele-consultation platform. The system is composed of: (1) a native-performance cross-platform mobile application developed with Flutter, dedicated exclusively to the Farmer role with bilingual Amharic and English interfaces, real-time animated typewriter AI disease diagnosis streaming, ticket submission, and direct chat; (2) a reactive web management portal built on React/Vite and Tailwind CSS for Woreda Lead Officers, Kebele Extension Officers, and Administrators; and (3) a robust backend microservice architecture powered by Python Django REST Framework, PostgreSQL, and WebSockets (Django Channels).</p>
+<p>Empirical evaluation across functional test matrices and field simulations demonstrates that Massaye reduces agricultural diagnosis turnaround from 5-12 days down to under 3 seconds, automates ticket routing by Kebele jurisdiction, and provides administrators with real-time epidemiological outbreak heatmaps.</p>
+<p>Keywords: Intelligent Agriculture, Plant Disease Detection, Deep Learning, Flutter, Django REST Framework, Extension Advisory, Kebele Administration, Tele-Consultation.</p>
+<h1>TABLE OF CONTENTS</h1>
+<p>Preliminaries ..................................................................................................................................................... i</p>
+<p>Declaration ....................................................................................................................................................... ii</p>
+<p>Approval Sheet ................................................................................................................................................ iii</p>
+<p>Dedication ........................................................................................................................................................ iv</p>
+<p>Acknowledgments ............................................................................................................................................ v</p>
+<p>Abstract ............................................................................................................................................................ vi</p>
+<p>List of Acronyms and Abbreviations ................................................................................................................... vii</p>
+<p>List of Tables ................................................................................................................................................... viii</p>
+<p>List of Figures ................................................................................................................................................... ix</p>
+<h1>CHAPTER ONE: INTRODUCTION ................................................................................................................... 1</h1>
+<p>1.1 Background ............................................................................................................................................... 1</p>
+<p>1.2 Statement of the Problem .......................................................................................................................... 3</p>
+<p>1.3 Objective of the Project ............................................................................................................................. 5</p>
+<p>1.3.1 General Objective ............................................................................................................................... 5</p>
+<p>1.3.2 Specific Objectives .............................................................................................................................. 5</p>
+<p>1.4 Methodology ............................................................................................................................................. 7</p>
+<p>1.4.1 Requirement Gathering Methods ......................................................................................................... 7</p>
+<p>1.4.2 Requirement Modelling Approach ....................................................................................................... 8</p>
+<p>1.4.3 Tools and Technologies Used .............................................................................................................. 9</p>
+<p>1.5 Feasibility Study ....................................................................................................................................... 11</p>
+<p>1.5.1 Economic Feasibility .......................................................................................................................... 11</p>
+<p>1.5.2 Technical Feasibility .......................................................................................................................... 12</p>
+<p>1.5.3 Operational Feasibility ........................................................................................................................ 13</p>
+<p>1.5.4 Political and Legal Feasibility ............................................................................................................. 13</p>
+<p>1.5.5 Time / Schedule Feasibility ................................................................................................................. 14</p>
+<p>1.6 Project Scope and Limitation .................................................................................................................... 15</p>
+<p>1.6.1 Project Scope ..................................................................................................................................... 15</p>
+<p>1.6.2 Project Limitations ............................................................................................................................. 16</p>
+<p>1.7 Significance of the Project ......................................................................................................................... 17</p>
+<p>1.8 Organization of the Project ....................................................................................................................... 18</p>
+<h1>CHAPTER TWO: REQUIREMENT SPECIFICATION AND OBJECT-ORIENTED ANALYSIS ................... 19</h1>
+<p>2.1 Existing System ......................................................................................................................................... 19</p>
+<p>2.1.1 Existing System Description ............................................................................................................... 19</p>
+<p>2.1.2 Business Rules of the Existing System ................................................................................................ 20</p>
+<p>2.1.3 Drawbacks of the Existing System ...................................................................................................... 21</p>
+<p>2.2 Proposed System ....................................................................................................................................... 22</p>
+<p>2.2.1 Functional Requirements .................................................................................................................... 22</p>
+<p>2.2.2 Non-Functional Requirements and Constraints ................................................................................... 24</p>
+<p>2.2.3 Business Rules of the Proposed System .............................................................................................. 26</p>
+<p>2.2.4 System Actor Identification and Descriptions .................................................................................... 27</p>
+<p>2.2.5 Use Case Diagram ............................................................................................................................... 28</p>
+<p>2.2.6 Detailed Use Case Documentation ...................................................................................................... 29</p>
+<p>2.2.7 Sequence Diagrams ............................................................................................................................. 33</p>
+<p>2.2.8 State Chart Diagrams .......................................................................................................................... 35</p>
+<p>2.2.9 Activity Diagrams ............................................................................................................................... 37</p>
+<p>2.3 Key Abstraction with CRC Analysis .......................................................................................................... 39</p>
+<p>2.4 Class Diagram .......................................................................................................................................... 41</p>
+<p>2.5 Identifying Change Cases .......................................................................................................................... 43</p>
+<p>2.6 User Interface Prototyping ........................................................................................................................ 44</p>
+<h1>CHAPTER THREE: OBJECT-ORIENTED SYSTEM DESIGN .......................................................................... 45</h1>
+<p>3.1 Purpose and Goals of Design .................................................................................................................... 45</p>
+<p>3.2 Current Software Architecture ................................................................................................................... 46</p>
+<p>3.3 Proposed Software Architecture ................................................................................................................ 46</p>
+<p>3.3.1 Subsystem Decomposition .................................................................................................................. 46</p>
+<p>3.3.2 Component Diagram ........................................................................................................................... 48</p>
+<p>3.4 Deployment Diagram ................................................................................................................................ 49</p>
+<p>3.5 Database Design (E-R Diagram) for Relational Database ......................................................................... 50</p>
+<p>3.5.1 Conceptual and Logical Schema ......................................................................................................... 50</p>
+<p>3.5.2 Relational Data Dictionary and Table Structures ............................................................................... 51</p>
+<p>3.6 Persistence Modelling for Object-Oriented Database ................................................................................ 54</p>
+<p>3.7 Access Control and Security ...................................................................................................................... 55</p>
+<h1>CHAPTER FOUR: IMPLEMENTATION, TESTING, AND MAINTENANCE .................................................. 57</h1>
+<p>4.1 Introduction to Languages, IDEs, Tools, and Technologies ..................................................................... 57</p>
+<p>4.2 Coding Standards of Language Used ........................................................................................................ 58</p>
+<p>4.3 Testing Techniques and Test Plans ............................................................................................................ 59</p>
+<p>4.3.1 Unit Testing ........................................................................................................................................ 59</p>
+<p>4.3.2 Integration Testing ............................................................................................................................. 60</p>
+<p>4.3.3 System and User Acceptance Testing .................................................................................................. 61</p>
+<p>4.3.4 Test Case Execution Matrix and Results ............................................................................................. 62</p>
+<h1>CHAPTER FIVE: RESULTS AND DISCUSSION ............................................................................................... 64</h1>
+<p>5.1 User Interface Representation of Respective Project ................................................................................. 64</p>
+<p>5.1.1 Brief Description of Various Modules of the System .......................................................................... 64</p>
+<p>5.2 Snapshots of System with Brief Detail of Each .......................................................................................... 66</p>
+<p>5.3 Back Ends Representation (Database to be Used) ...................................................................................... 72</p>
+<p>5.3.1 Snapshots of Database Tables with Brief Description ........................................................................ 72</p>
+<h1>CHAPTER SIX: CONCLUSION AND RECOMMENDATION .......................................................................... 75</h1>
+<p>6.1 Conclusion ................................................................................................................................................ 75</p>
+<p>6.2 Recommendation ..................................................................................................................................... 77</p>
+<p>REFERENCES / BIBLIOGRAPHY ..................................................................................................................... 79</p>
+<p>APPENDIX ........................................................................................................................................................... 82</p>
+<h1>LIST OF ACRONYMS AND ABBREVIATIONS</h1>
+<p>Table 0.1: Standard Project Acronyms and Abbreviations</p>
+<h1>CHAPTER ONE INTRODUCTION</h1>
+<h2>1.1 Background</h2>
+<p>Agriculture represents the undeniable cornerstone and bedrock of the Ethiopian economy, societal stability, and cultural heritage. According to comprehensive empirical assessments and surveys conducted by the Ethiopian Ministry of Agriculture (MoA), the Central Statistical Agency (CSA), and the Food and Agriculture Organization (FAO), smallholder subsistence farming accounts for upwards of 85% of total national employment, generates approximately 32% of the national Gross Domestic Product (GDP), and provides more than 70% of foreign currency export earnings. Across the country's diverse agro-ecological landscape—ranging from the cool temperate highlands (Dega) and intermediate valleys (Woina Dega) to the hot semi-arid lowlands (Kolla)—millions of smallholder agrarian households cultivate primary cereal staples such as Teff (Eragrostis tef), Maize (Zea mays), Wheat (Triticum aestivum), Barley, and Sorghum, alongside vital commercial horticulture including Tomato, Potato, Pepper, and Coffee.</p>
+<p>Despite this paramount economic and social role, agricultural productivity per unit area of cultivated land across Ethiopia remains markedly depressed below continental and global agronomic benchmarks. While systemic factors such as soil acidity, land fragmentation, and erratic rainfall patterns contribute to this gap, the most volatile, recurring, and devastating threat to crop yields is the rampant proliferation of infectious phytopathogenic foliar diseases and insect pests. Under shifting microclimatic conditions, fungal blights, bacterial wilts, and viral infections spread across farming communities with aggressive reproductive fecundity.</p>
+<p>For example, in maize-producing corridors, Northern Corn Leaf Blight (Exserohilum turcicum) and Common Rust (Puccinia sorghi) routinely decimate photosynthetic leaf area, reducing grain harvest weights by 30% to 70%. In wheat-growing zones such as Arsi, Bale, and North Shewa, epidemics of Stem Rust (Puccinia graminis) and Stripe Rust have historically caused 100% complete field destruction within single cropping seasons. Similarly, high-value smallholder horticultural crops, particularly Tomato and Potato, are perpetually jeopardized by Late Blight (Phytophthora infestans) and Early Blight (Alternaria solani), which destroy crops within days of foliar symptom manifestation.</p>
+<p>The challenge is severely magnified by smallholder diagnostic ambiguity. Rural farmers lack formalized phytopathological training. Symptoms of fungal leaf blight, bacterial spot, viral chlorosis, and physiological stress (such as nitrogen, zinc, or phosphorus deficiency) exhibit remarkably similar visual markers to the untrained human eye. Consequently, when a farmer notices necrotic brown spots or yellowing leaves, they frequently misdiagnose the underlying causative agent. This misdiagnosis prompts farmers to purchase incorrect, unnecessary, or unverified agrochemicals from open local markets. Such misguided applications not only waste scarce household financial savings but also induce environmental toxicity, accelerate chemical resistance among pest populations, and fail completely to halt the spread of the pathogen.</p>
+<p>Historically, the institutional mechanism designed to address these frontline agrarian challenges is the Ethiopian public agricultural extension system. Structurally organized from the Federal Ministry down through Regional Agricultural Bureaus, Zonal Departments, Woreda (District) Agricultural Offices, and rural Kebele (Sub-district) Farmer Training Centers (FTCs), extension agents known as Development Agents (DAs) are stationed to provide technical guidance. Each Kebele is typically assigned three specialized extension workers: one for Crop Production, one for Animal Husbandry, and one for Natural Resource Management.</p>
+<p>However, as detailed in Section 1.2, this conventional, in-person advisory modality faces severe operational crises. Prohibitive agent-to-farmer ratios, extreme topographical barriers, unpaved rural road networks, seasonal river crossings, and paper-based administrative documentation render regular, timely farm visits physically impossible. By the time a farmer locates an extension agent or an agent inspects an afflicted plot, the biological window for effective disease mitigation has almost always lapsed.</p>
+<p>In recent years, the telecommunications landscape in Ethiopia has undergone an unprecedented digital transformation. Driven by aggressive cellular network expansion by Ethio Telecom and Safaricom Ethiopia, 4G cellular data coverage has penetrated deep into rural Woredas and agrarian corridors. Concurrently, the availability of low-cost, budget Android smartphones equipped with high-resolution digital cameras has risen dramatically among rural and peri-urban agrarian households. This technological proliferation establishes a fertile and historic foundation for digital agricultural transformation.</p>
+<p>Project Massaye (meaning 'My Farmland' in Amharic) is conceived and engineered as an end-to-end intelligent agricultural advisory and management ecosystem. By synthesizing state-of-the-art computer vision deep learning with localized, multi-tier web and mobile tele-consultation workflows, Massaye democratizes expert phytopathological diagnostics for smallholder farmers while arming agricultural extension agents and government administrators with unprecedented administrative and epidemiological control.</p>
+<h2>1.2 Statement of the Problem</h2>
+<p>Despite decades of substantial public investments in agricultural extension infrastructure and rural human capital development, crop disease management among Ethiopian smallholders remains reactive, inefficient, and systematically dysfunctional. Critical structural bottlenecks in the existing system include:</p>
+<p>Prohibitive Diagnostic Latency and Accelerated Crop Loss: Biological crop disease pathogens exhibit exponential infection cycles, often completing a full sporulation and spore dispersal phase within 48 to 72 hours under warm, humid field conditions. Under the prevailing conventional extension model, when a farmer detects foliar abnormalities, they must walk hours to the Kebele FTC. If the Crop Development Agent is conducting field visits elsewhere, attending administrative meetings at the Woreda town, or on leave, the farmer returns without guidance. The resulting latency between initial symptom detection and physical agent inspection averages between 5 and 12 days. In severe epidemics such as Late Blight or Rust, a 10-day delay translates directly into total crop destruction, forcing farming families into financial destitution and severe food insecurity.</p>
+<p>Severe Diagnostic Inaccuracy and Indiscriminate Agrochemical Misuse: Smallholder farmers lack optical magnification or diagnostic reference materials. Symptoms of fungal leaf spots, bacterial wilts, and physiological micronutrient deficiencies are routinely confused. Unable to obtain prompt expert verification, farmers travel to local market towns and purchase broad-spectrum commercial chemicals based on arbitrary merchant advice. Studies indicate that over 50% of agrochemical applications by smallholder vegetable growers in Ethiopia are inappropriate for the targeted pathogen. This practice wastes scarce household financial capital, causes acute occupational chemical poisoning, contaminates rural groundwater sources, and accelerates pesticide resistance among local pathogen populations without saving the crop.</p>
+<p>Overwhelming Extension Agent Workloads and Inequitable Geographic Coverage: In the vast majority of agricultural Woredas across Ethiopia, a single Kebele Crop Production Development Agent is tasked with serving between 800 and 1,500 dispersed rural households. A single agent cannot physically inspect more than 3 to 5 farms per day given the rugged mountainous terrain, dispersed settlement patterns, and absence of motorized transport. Consequently, farmers situated on the geographic peripheries of Kebeles are systematically disenfranchised from public advisory services.</p>
+<p>Absence of Centralized Epidemiological Data and Outbreak Early Warning: Currently, when agricultural extension workers encounter crop diseases, details are recorded on physical paper ledgers or loose sheets stored in rural FTC offices. These paper records are vulnerable to physical deterioration, vermin, moisture damage, and loss. Monthly summary reports compiled for Woreda offices arrive weeks after an outbreak has initiated. At Zonal, Regional, and National Ministry levels, decision-makers have zero real-time spatial visibility into disease distribution vectors, preventing proactive containment measures such as targeted chemical buffer distributions or quarantine boundaries.</p>
+<p>Linguistic, Literacy, and Communication Barriers: High-level agricultural research outputs, pest alerts, and registered chemical safety datasheets produced by national research institutes (such as EIAR) are predominantly published in English or complex academic Amharic. Rural farmers—many of whom possess limited formal literacy—are unable to interpret technical text, resulting in widespread misinterpretation of chemical dosage rates, dilution ratios, and safety harvest intervals.</p>
+<h2>1.3 Objective</h2>
+<h3>General Objective</h3>
+<p>The general objective of this final year project is to conceptualize, design, develop, test, and deploy Massaye, an end-to-end intelligent agricultural advisory and management system that integrates deep learning computer vision with localized web and mobile tele-consultation workflows to empower Ethiopian farmers and agricultural extension personnel in diagnosing, managing, and tracking crop diseases.</p>
+<h3>Specific Objectives</h3>
+<p>To accomplish the overarching general objective, the project executes the following specific, measurable, achievable, relevant, and time-bound (SMART) objectives:</p>
+<p>To engineer and train a high-performance deep convolutional neural network (CNN) image classification pipeline capable of classifying major foliar diseases of dominant Ethiopian crops (Maize, Wheat, Tomato, Potato, Pepper) from smartphone field photographs with a validated classification accuracy exceeding 90%.</p>
+<p>To design and develop a user-centric, offline-responsive cross-platform mobile application (Flutter) exclusively for the Farmer role, incorporating intuitive visual iconography, Amharic and English bilingual localization, real-time animated typewriter diagnosis streaming, and direct camera integration.</p>
+<p>To engineer a reactive web management portal using React/Vite and Tailwind CSS tailored for Kebele Field Extension Officers, Woreda Lead Officers, and System Administrators to facilitate consultation triage, clinical image analysis, and digital prescription issuance.</p>
+<p>To build an automated, geographically normalized consultation routing engine within the Django REST backend that dynamically binds farmer consultation tickets to certified extension officers according to official Kebele administrative boundaries.</p>
+<p>To implement a full-duplex, real-time messaging subsystem utilizing WebSockets (Django Channels) supporting bidirectional text messaging and compressed voice notes, enabling illiterate and semi-literate farmers to communicate directly with specialists.</p>
+<p>To develop an administrative epidemiological outbreak heatmap and analytical reporting engine providing Woreda and Zonal agricultural directors with real-time spatial intelligence regarding disease distribution vectors.</p>
+<p>To rigorously evaluate the system through comprehensive unit, integration, usability, and user acceptance testing (UAT) against defined functional, performance, security, and reliability metrics.</p>
+<h2>1.4 Methodology</h2>
+<p>To develop a software system that is both technically robust and socio-technically grounded in the authentic operational realities of Ethiopian agriculture, a systematic Object-Oriented Analysis and Design (OOAD) methodology was combined with an Agile Scrum development framework.</p>
+<h3>Requirement Gathering Methods</h3>
+<p>Requirements elicitation utilized a multi-methodological triangulation strategy:</p>
+<p>Semi-Structured Interviews: Conducted with 12 smallholder cereal and vegetable farmers, 6 Kebele Crop Development Agents, and 2 Woreda Agricultural Supervisors in North Shewa and surrounding agrarian corridors. These interviews elicited practical data regarding typical disease detection timelines, pesticide purchasing habits, smartphone literacy levels, and extension reporting bottlenecks.</p>
+<p>Field Observations: The development team observed routine diagnostic interactions and farmer consultations at rural Kebele FTCs. This observation documented the physical distances traveled by farmers, the inspection procedures utilized by extension agents, and the physical ledgers maintained for case logging.</p>
+<p>Document and Secondary Data Analysis: Analyzed official Ethiopian Ministry of Agriculture extension training manuals, Crop Protection Guidelines, national pesticide registration gazettes, and Central Statistical Agency agrarian sample surveys. This analysis established official administrative geographic hierarchies (Region -> Zone -> Woreda -> Kebele) and formal disease diagnostic criteria.</p>
+<p>Domain Literature Review: Conducted exhaustive surveys of contemporary scientific publications regarding convolutional neural networks, transfer learning, residual networks (ResNet), lightweight mobile architectures (MobileNetV2), and mobile agricultural informatics in developing economies.</p>
+<h3>Requirement Modelling Approach</h3>
+<p>The project adopts an Object-Oriented Analysis and Design (OOAD) modeling paradigm utilizing the Unified Modeling Language (UML 2.5). OOAD was selected due to the presence of distinct, highly interactive, and persistent entities (Users, Kebeles, Disease Predictions, Consultations, Prescriptions, Messages, and Agricultural Guides) exhibiting encapsulated data attributes, complex state transitions, and role-based operational policies. Dynamic system behaviors are specified using Use Case Diagrams, Sequence Diagrams, Activity Diagrams, and State Chart Diagrams, while static structural architectures are modeled using CRC (Class-Responsibility-Collaborator) cards, Analysis Class Diagrams, and Relational Entity-Relationship Diagrams (ERD).</p>
+<h3>Tools and Technologies Used</h3>
+<p>The software engineering toolchain incorporates modern, robust, and open-source frameworks across each subsystem tier:</p>
+<p>Table 1.1: Comprehensive Engineering Technology Stack</p>
+<h2>1.5 Feasibility Study</h2>
+<p>To verify the viability, sustainability, and practical applicability of Massaye within the target operating environment, an exhaustive five-dimensional feasibility study was executed.</p>
+<h2>1.5.1 Economic Feasibility</h2>
+<p>Economic feasibility evaluates whether the system's development, deployment, and operational expenses are justified by measurable financial and socio-economic returns:</p>
+<p>Development Costs: The development of Massaye relies exclusively on open-source frameworks, software development kits (SDKs), and libraries (Python, Django REST Framework, Flutter, React, PostgreSQL, PyTorch), eliminating proprietary licensing fees entirely. Development workstations and testing devices utilized existing university computing laboratory infrastructure.</p>
+<p>Operational & Hosting Costs: Production backend hosting on virtual private cloud servers (VPS) or Ethiopian national data infrastructure (e.g., Ethio Telecom Cloud) requires modest computational capacity (approx. 4 vCPUs, 8 GB RAM, 100 GB SSD), incurring negligible annual operating overhead.</p>
+<p>Socio-Economic Return to Farmers: The economic loss incurred by a single smallholder hectare of maize or wheat afflicted with late-stage rust or blight ranges between 35,000 and 120,000 Ethiopian Birr (ETB). By detecting foliar infections 7 to 14 days earlier than manual methods, Massaye preserves between 40% and 80% of threatened yields. A smallholder household investing less than 10 ETB in mobile data per scan protects tens of thousands of Birr in net crop equity per season. The benefit-to-cost ratio is overwhelmingly positive, confirming robust economic feasibility.</p>
+<h2>1.5.2 Technical Feasibility</h2>
+<p>Technical feasibility assesses whether the development team possessed adequate engineering competency, software toolchains, and hardware environments to successfully realize the system:</p>
+<p>Engineering Competency: The project team acquired mastery over object-oriented software engineering, relational database normalization, Python web frameworks, mobile app architecture, and machine learning pipelines through the accredited DBU Information Systems curriculum.</p>
+<p>Hardware Infrastructure Compatibility: Budget Android smartphones widely owned by Ethiopian rural households feature camera sensors exceeding 8 Megapixels and at least 2 GB of RAM. The Flutter mobile application was engineered with lightweight rendering trees, consuming less than 90 MB of runtime RAM, ensuring smooth execution even on entry-level Android devices.</p>
+<p>Network Resilience: The backend architecture utilizes aggressive payload compression (transferring images under 400 KB and structured JSON payloads under 2 KB), resilient connection timeouts, and automatic retry policies, guaranteeing reliable communication over fluctuating rural 3G and 4G networks.</p>
+<h2>1.5.3 Operational Feasibility</h2>
+<p>Operational feasibility examines the ease with which end-users (rural farmers, extension agents, and agricultural directors) will integrate the software into their daily routines:</p>
+<p>User Experience for Semi-Literate Farmers: The mobile app features large high-contrast touch controls (minimum 48x48 dp), clear agricultural iconography, full Amharic and English translation, and audio voice note messaging, removing literacy barriers.</p>
+<p>Extension Workflow Alignment: The web portal reinforces the established administrative chain of command: consultations are automatically partitioned and routed strictly by Kebele and Woreda jurisdictions, preserving the authority and existing operational protocols of Woreda Lead Officers and Kebele DAs.</p>
+<h2>1.5.4 Political and Legal Feasibility</h2>
+<p>National Policy Alignment: Massaye aligns directly with the Digital Ethiopia 2025 Strategy, which explicitly identifies digital agriculture, mobile extension delivery, and agrarian data modernization as key national economic transformation imperatives.</p>
+<p>Data Protection and Agronomic Compliance: User credentials, location coordinates, and farm photos are secured with salted bcrypt hashing and tokenized JWT authentication. Agrochemical prescriptions generated within the system comply with registered Ethiopian Ministry of Agriculture pesticide safety directives, mitigating off-label chemical hazards.</p>
+<h2>1.5.5 Time / Schedule Feasibility</h2>
+<p>The project was structured across a 28-week academic calendar using the Agile Scrum development framework. Milestones were completed within the defined schedule:</p>
+<p>Table 1.2: Project Development Work Plan and Schedule Matrix</p>
+<h2>1.6 Project Scope and Limitation</h2>
+<h2>1.6.1 Project Scope</h2>
+<p>The functional, architectural, and operational scope of Massaye encompasses:</p>
+<p>Geographic Hierarchy Administration: Multi-level administrative CRUD management spanning Regions, Zones, Woredas, and Kebeles across Ethiopia.</p>
+<p>Deep Learning Foliar Diagnostics: Real-time image-based detection of dominant foliar diseases across five major Ethiopian staple and horticultural crops: Maize (Leaf Blight, Common Rust), Wheat (Stem Rust), Tomato (Early Blight, Late Blight), Potato (Early Blight, Late Blight), and Pepper (Bacterial Spot).</p>
+<p>End-to-End Tele-Consultation Management: Structured case ticketing enabling farmers to escalate AI predictions into formal consultation requests, supporting status lifecycles from NEW to ASSIGNED, WAITING_FOR_FARMER, RESOLVED, and CLOSED.</p>
+<p>Multimodal Real-Time Communication: Bidirectional text messaging and compressed voice note transmission between farmers and assigned extension officers over persistent WebSocket connections.</p>
+<p>Agricultural Knowledge Base: Digital publishing, management, and offline mobile caching of vetted agronomic pest control guides, organic treatments, and seasonal planting advice in Amharic and English.</p>
+<p>Epidemiological Outbreak Analytics: Geographic Information System (GIS) mapping and statistical dashboards plotting disease incidence frequencies across Woredas and Kebeles.</p>
+<h2>1.6.2 Project Limitations</h2>
+<p>Symptom Boundary: The computer vision model classifies foliar pathologies exhibiting visible optical symptoms on leaf surfaces; it does not identify subterranean root-knot nematodes, vascular wilts prior to foliar display, or soil salinity.</p>
+<p>Hardware Prerequisite: Diagnostic image capture requires a mobile smartphone equipped with an operational digital camera sensor; feature phones without cameras cannot utilize the computer vision diagnostic module.</p>
+<p>Connectivity Prerequisite for Inference: While educational guides and historical records are cached locally on the mobile device, initial AI diagnosis requires active cellular data connectivity to transmit image tensors to the backend cloud inference server.</p>
+<h2>1.7 Significance of the Project</h2>
+<p>The successful deployment of Massaye delivers multi-dimensional benefits across Ethiopian society:</p>
+<p>For Smallholder Farming Households: Provides immediate 24/7 access to expert-grade crop diagnosis, halts disease progression before total harvest destruction, eliminates unnecessary travel to distant towns, prevents financial loss from improper agrochemical purchases, and elevates household economic stability.</p>
+<p>For Frontline Extension Agents (DAs): Eliminates exhausting, redundant physical foot travel to distant plots for routine visual inspections, organizes inquiries into structured digital queues, and provides historical case records to support accurate clinical prescriptions.</p>
+<p>For Woreda and Zonal Agricultural Offices: Replaces fragmented, slow paper reporting with real-time epidemiological intelligence, enabling rapid mobilization of emergency agrochemical supplies and containment of pathogen vectors.</p>
+<p>For the Information Systems Academic Community: Establishes a reference architecture demonstrating how modern computer vision and distributed web/mobile systems can be pragmatically designed to solve real-world developmental challenges in agrarian economies.</p>
+<h2>1.8 Organization of the Project</h2>
+<p>This project documentation is structured into six comprehensive chapters in strict conformance with the Debre Berhan University Department of Information Systems Guidelines:</p>
+<p>Chapter One (Introduction): Presents the project background, statement of the problem, general and SMART specific objectives, methodologies, five-dimensional feasibility studies, scope, and significance.</p>
+<p>Chapter Two (Requirement Specification and Object-Oriented Analysis): Analyzes the legacy manual extension system, specifies functional/non-functional requirements and business rules, details comprehensive UML analysis models (Use Case, Sequence, State Chart, Activity), CRC abstraction cards, class diagrams, and change cases.</p>
+<p>Chapter Three (Object-Oriented System Design): Details the design goals, three-tier software architecture, subsystem decompositions, UML component and deployment diagrams, relational ERD schemas, data dictionaries, and access control matrices.</p>
+<p>Chapter Four (Implementation, Testing, and Maintenance): Introduces development languages, IDEs, and frameworks, defines coding standards, and presents unit, integration, and user acceptance test plans alongside an empirical test execution matrix.</p>
+<p>Chapter Five (Results and Discussion): Provides a walkthrough of mobile and web interface modules, system screen snapshots, and relational database realizations.</p>
+<p>Chapter Six (Conclusions and Recommendations): Synthesizes project achievements against objectives, discusses practical implications, acknowledges limitations, and articulates actionable recommendations for policymakers, practitioners, and future researchers.</p>
+<h1>CHAPTER TWO REQUIREMENT SPECIFICATION AND OBJECT ORIENTED ANALYSIS</h1>
+<h2>2.1 Existing System</h2>
+<h2>2.1.1 Existing System Description</h2>
+<p>In the current conventional agricultural extension system operating across rural Ethiopia, information exchange, crop pathology diagnostics, and agronomic advisory services remain entirely physical, manual, paper-dependent, and geographically tethered. When a smallholder farmer observes abnormal foliar discoloration, wilting, powdery mildew, or necrotic lesions on their staple cereal or vegetable plots, the existing operational process unfolds through the following sequential manual steps:</p>
+<p>Step 1 (Symptom Discovery): The farmer identifies abnormal symptoms on their crop while conducting routine weeding, irrigation, or field inspection.</p>
+<p>Step 2 (Physical Journey to FTC): Because rural farmers lack direct telephone contact with agricultural specialists, the farmer must physically walk or travel via local animal transport to the Kebele Farmer Training Center (FTC) to report the issue to the resident Crop Production Development Agent (DA).</p>
+<p>Step 3 (Agent Availability Bottleneck): Upon arriving at the Kebele FTC, the farmer frequently discovers that the Development Agent is away on field duty in a distant sub-village, attending administrative meetings at the Woreda center, or off duty. Under such circumstances, the farmer returns home without advice, losing valuable hours of manual field labor.</p>
+<p>Step 4 (Delayed Farm Inspection): If the DA is present, the agent schedules a physical inspection visit. Due to the DA's heavy workload (often serving hundreds of farming households), this visit typically occurs 4 to 10 days later.</p>
+<p>Step 5 (In-Field Visual Diagnosis): The extension agent physically visits the farm plot, visually examines the afflicted crop foliage, relies on personal memory or paper field manuals to diagnose the pathology, and provides verbal chemical or cultural advice.</p>
+<p>Step 6 (Agrochemical Procurement): The farmer travels to an agro-dealer in the nearest commercial town to purchase the recommended chemical, frequently encountering stock-outs or purchasing incorrect formulations due to verbal miscommunication.</p>
+<p>Step 7 (Manual Ledger Logging): The DA enters a brief handwritten record in a physical paper ledger at the FTC office. These ledgers are periodically aggregated into monthly summary reports sent to the Woreda Agricultural Office via public transport.</p>
+<h2>2.1.2 Business Rules of the Existing System</h2>
+<p>BR-EXT-01 (Jurisdictional Restriction): A farmer is strictly permitted to seek formal agricultural extension support only from the Development Agents assigned to their official Kebele of residence.</p>
+<p>BR-EXT-02 (Working Hours Constraint): Official extension services and FTC office consultations are accessible exclusively during formal civil service hours (Monday through Friday, 8:30 AM to 5:30 PM).</p>
+<p>BR-EXT-03 (Mandatory Physical Inspection): Official disease diagnosis requires the physical presence of the extension agent on the afflicted farm plot.</p>
+<p>BR-EXT-04 (Fixed Reporting Schedule): Administrative disease incidence reporting from Kebele to Woreda occurs on a rigid monthly schedule, regardless of emergency outbreak conditions.</p>
+<h2>2.1.3 Drawbacks of the Existing System</h2>
+<p>Severe Diagnostic Latency: The average turnaround time between initial disease observation and expert diagnosis ranges from 5 to 12 days, during which pathogens often spread across entire fields.</p>
+<p>Diagnostic Misclassification: Extension agents lack optical diagnostic aids; visual confusion between fungal blights and nutrient deficiencies leads to inappropriate chemical recommendations.</p>
+<p>High Opportunity Costs: Resource-poor farmers incur financial transport expenses and lose days of productive labor traveling to distant FTC offices.</p>
+<p>Vulnerability of Paper Ledgers: Physical records are subject to moisture, vermin, physical damage, and misplacement, preventing historical epidemiological analysis.</p>
+<p>Absence of Early Warning Capabilities: Zonal and Regional bureaus remain unaware of emergent disease outbreaks until weeks after inception, precluding containment.</p>
+<h2>2.2 New System</h2>
+<h2>2.2.1 Functional Requirements</h2>
+<p>The functional requirements of Massaye are structured across six operational subsystem modules:</p>
+<p>Table 2.1: Functional Requirements Specification Matrix</p>
+<h2>2.2.2 Non-Functional Requirements and Constraints</h2>
+<p>The non-functional requirements define the quality attributes, architectural constraints, and performance baselines:</p>
+<p>Table 2.2: Non-Functional Requirements and Quality Baselines</p>
+<h2>2.2.3 Business Rules of the Proposed System</h2>
+<p>BR-SYS-01 (Kebele Immutability on Ticket): When a farmer creates a consultation ticket, the ticket immutably snapshots the farmer's registered Kebele at creation time. Subsequent changes to the farmer's profile do not alter historical ticket routing.</p>
+<p>BR-SYS-02 (Farmer Mobile Lockdown): The mobile application is exclusively reserved for the Farmer role. Officers and Administrators attempting to log into the mobile application are rejected with a clear redirection to the Web Portal.</p>
+<p>BR-SYS-03 (Officer Verification Gate): Newly registered Agriculture Officers are created in a PENDING_VERIFICATION state and cannot view consultation queues until an Administrator verifies their credentials and sets status to ACTIVE.</p>
+<p>BR-SYS-04 (Lead Officer Delegation): Only designated Woreda Lead Officers possess the authority to reassign consultations between field officers within their jurisdiction.</p>
+<p>BR-SYS-05 (Prediction Storage Integrity): Only authentic plant disease predictions meeting a minimum model confidence threshold (>= 60%) are persisted in the permanent PredictionHistory table; low-confidence scans are rejected without database pollution.</p>
+<h2>2.2.4 System Actor Identification and Descriptions</h2>
+<p>The system defines four distinct actors interacting with specialized subsystems:</p>
+<p>Table 2.3: Actor Role Identification Matrix</p>
+<h2>2.2.5 Use Case Diagram</h2>
+<p>The Use Case Diagram defines the interactions between human actors, the AI inference engine, and the core functional boundaries of the system.</p>
+<p class="caption">Figure 2.1: System Use Case Diagram</p>
+<p class="desc">Description: Illustrates actor interactions across Authentication, AI Diagnostics, Consultation Ticketing, Real-Time Chat, and Administrative subsystems with <<include>> and <<extend>> relationships.</p>
+<h2>2.2.6 Detailed Use Case Documentation</h2>
+<p>Below is the detailed specification for core system use cases:</p>
+<p>Table 2.4: Use Case Documentation UC-01 (Authenticate User)</p>
+<p>Table 2.5: Use Case Documentation UC-05 (AI Disease Diagnosis)</p>
+<p>Table 2.6: Use Case Documentation UC-09 (Create Consultation Ticket)</p>
+<p>Table 2.7: Use Case Documentation UC-11 (Prescribe Treatment)</p>
+<h2>2.2.7 Sequence Diagrams</h2>
+<p>Sequence diagrams capture the time-ordered message exchange between participating objects:</p>
+<p class="caption">Figure 2.2: Sequence Diagram - AI Disease Diagnosis Pipeline</p>
+<p class="desc">Description: Illustrates chronological interactions between Farmer Mobile Client, Scanner Bloc, Django REST API, PyTorch CNN Engine, and PostgreSQL Database.</p>
+<p class="caption">Figure 2.3: Sequence Diagram - Consultation Escalation & Prescription</p>
+<p class="desc">Description: Models message sequences from Farmer consultation submission, automatic Kebele officer lookup, WebSocket notification broadcast, to Officer prescription submission.</p>
+<h2>2.2.8 State Chart Diagrams</h2>
+<p>State chart diagrams illustrate dynamic lifecycle state transitions for core domain entities:</p>
+<p class="caption">Figure 2.4: State Chart Diagram - Consultation Ticket Lifecycle</p>
+<p class="desc">Description: Details ticket states: NEW -> ASSIGNED -> WAITING_FOR_FARMER -> WAITING_FOR_OFFICER -> RESOLVED -> CLOSED.</p>
+<p class="caption">Figure 2.5: State Chart Diagram - User Account Lifecycle</p>
+<p class="desc">Description: Models user state transitions: PENDING_VERIFICATION -> ACTIVE -> SUSPENDED.</p>
+<h2>2.2.9 Activity Diagrams</h2>
+<p>The activity diagram illustrates operational decision flows across end-to-end diagnostic and advisory processes:</p>
+<p class="caption">Figure 2.6: Activity Diagram - End-to-End Disease Advisory Workflow</p>
+<p class="desc">Description: Flowchart modeling user actions from photo capture, confidence threshold evaluation, animated streaming, consultation escalation, ticket triage, to prescription issuance.</p>
+<h2>2.3 Key Abstraction with CRC Analysis</h2>
+<p>Class-Responsibility-Collaborator (CRC) cards define core conceptual abstractions:</p>
+<p>Table 2.8: Class Responsibility Collaborator (CRC) Matrix</p>
+<h2>2.4 Class Diagram</h2>
+<p>The Analysis Class Diagram defines the static structural entities, their internal attributes, methods, and relationships:</p>
+<p class="caption">Figure 2.7: Domain Analysis Class Diagram</p>
+<p class="desc">Description: UML Class diagram depicting User, Kebele, Woreda, PredictionHistory, Consultation, Prescription, and ChatMessage entities with multiplicity associations.</p>
+<h2>2.5 Identifying Change Cases</h2>
+<p>Anticipating future requirements evolution in agricultural informatics:</p>
+<p>Table 2.9: Anticipated Change Cases and Mitigation Strategies</p>
+<h2>2.6 User Interface Prototyping</h2>
+<p>Iterative UI prototyping established essential design constraints: (1) All drawer pages feature an explicit unconditional back button; (2) The diagnosis screen utilizes an animated typewriter stream to reduce user perceived waiting time; and (3) The color theme incorporates high-contrast emerald green (#1B5E20) and earth amber (#F57C00) to ensure readability under direct outdoor sunlight.</p>
+<h1>CHAPTER THREE OBJECT ORIENTED SYSTEM DESIGN</h1>
+<h2>3.1 Purpose and Goals of Design</h2>
+<p>The overarching purpose of the Object-Oriented System Design phase is to translate the conceptual analysis models formulated in Chapter Two into an enterprise-grade, robust, maintainable, scalable, and secure technical implementation architecture. Software design establishes the blueprints for subsystem partitioning, data persistence schemas, network communication protocols, and hardware deployment topologies. The design goals of Massaye are defined across four core dimensions:</p>
+<p>High Cohesion and Loose Coupling: Subsystems, components, and classes are modularized such that each module encapsulates a single coherent responsibility (e.g., authentication, AI inference, consultation workflow, or real-time chat). Inter-module dependencies communicate through clearly defined interfaces and RESTful/WebSocket contracts, enabling independent testing, refactoring, and scaling.</p>
+<p>Low-Bandwidth Rural Network Resilience: In agrarian environments across Ethiopia, cellular mobile connections fluctuate unpredictably between 2G, 3G, and 4G. The software design incorporates aggressive client-side image compression, compact JSON serialization, HTTP request caching, and idempotent REST endpoints to ensure flawless operation over high-latency networks.</p>
+<p>Zero-Trust Security & Role Separation: Security is integrated into the architectural fabric. Role-Based Access Control (RBAC) is enforced across presentation route guards, API middleware, and database ORM querysets, guaranteeing multi-tenant privacy between farmers and preventing unauthorized data leaks.</p>
+<p>Extensibility and Internationalization: Localization dictionaries and administrative hierarchies are structured to support future expansion to additional Ethiopian regional languages (e.g., Afaan Oromo, Tigrinya, Wolaytta) and administrative reorganizations without modifying compiled core application code.</p>
+<h2>3.2 Current Software Architecture</h2>
+<p>The legacy conventional agricultural advisory operational environment in Ethiopia possessed no digital software architecture whatsoever. Information exchange relied entirely on physical human travel, verbal consultations, handwritten paper ledgers, and physical postal mail reporting, exhibiting zero digital persistence, zero automated verification, and zero analytical capabilities.</p>
+<h2>3.3 Proposed Software Architecture</h2>
+<h2>3.3.1 Subsystem Decomposition</h2>
+<p>Massaye is structured into a Three-Tier Subsystem Decomposition Architecture spanning Presentation, Application Logic, and Data Persistence tiers:</p>
+<p>Presentation Tier: Comprises the Flutter Mobile Application (dedicated exclusively to the Farmer role) and the React/Vite Single Page Application (SPA) Web Portal (dedicated to Extension Officers and Administrators).</p>
+<p>Application Logic Tier: Encapsulates Nginx (reverse proxy and SSL termination), Gunicorn/Django WSGI server (handling synchronous RESTful business transactions), Daphne ASGI server (handling asynchronous WebSocket chat connections), and PyTorch Deep Learning microservices.</p>
+<p>Data Persistence Tier: Comprises the PostgreSQL 16 relational database management system for structured ACID transactions and persistent media storage for uploaded crop photographs and voice recordings.</p>
+<p class="caption">Figure 3.1: Three-Tier Subsystem Decomposition Architecture</p>
+<p class="desc">Description: Illustrates structural partitioning across Presentation Tier (Flutter, React), Application Tier (Nginx, Gunicorn WSGI, Daphne ASGI, PyTorch CNN), and Persistence Tier (PostgreSQL 16, Media Storage).</p>
+<h2>3.3.2 Component Diagram</h2>
+<p>The UML Component Diagram details the software modules, public interfaces, and component dependencies:</p>
+<p class="caption">Figure 3.2: UML Component Diagram</p>
+<p class="desc">Description: Shows Mobile Components (Auth, Scanner, Consultation, Chat), Web Components (Admin Dashboard, Triage Workbench, Prescription Editor), and Backend Components (REST Router, JWT Authenticator, Location Engine, Notification Dispatcher).</p>
+<h2>3.4 Deployment Diagram</h2>
+<p>The physical deployment topology models the allocation of software processes onto physical and virtual hardware nodes:</p>
+<p class="caption">Figure 3.3: Physical System Deployment Diagram</p>
+<p class="desc">Description: Depicts Farmer Android Smartphone connecting over 4G cellular to Nginx, Officer/Admin PC Browser connecting over HTTPS, and Production Ubuntu Linux Server hosting Django WSGI, Daphne ASGI, PyTorch, and PostgreSQL 16.</p>
+<h2>3.5 Database Design (E-R Diagram) for Relational Database</h2>
+<h2>3.5.1 Conceptual and Logical Schema</h2>
+<p>The relational database design adheres strictly to Third Normal Form (3NF), eliminating data redundancy, update anomalies, and referential inconsistencies:</p>
+<p class="caption">Figure 3.4: Comprehensive Relational Entity-Relationship Diagram (ERD)</p>
+<p class="desc">Description: Complete ERD detailing USER, KEBELE, WOREDA, PREDICTION_HISTORY, CROP_TYPE, CONSULTATION, PRESCRIPTION, CONVERSATION, and CHAT_MESSAGE entities with primary/foreign key mappings and cardinalities.</p>
+<h2>3.5.2 Relational Data Dictionary and Table Structures</h2>
+<p>The relational data dictionary specifies table schemas, data types, constraints, and operational descriptions:</p>
+<p>Table 3.1: Relational Data Dictionary - accounts_user</p>
+<p>Table 3.2: Relational Data Dictionary - predictions_predictionhistory</p>
+<p>Table 3.3: Relational Data Dictionary - consultations_consultation</p>
+<p>Table 3.4: Relational Data Dictionary - chat_message</p>
+<h2>3.6 Persistence Modelling for Object-Oriented Database</h2>
+<p>Persistence is realized through the Django Object-Relational Mapping (ORM) layer. Design patterns implemented in the ORM include:</p>
+<p>Case-Insensitive Location Integrity: Custom clean() validators enforce case-insensitive uniqueness across Region, Zone, Woreda, and Kebele entities, preventing duplicate geographic nodes.</p>
+<p>Normalized Conversation Constraints: The Conversation model overrides save() to normalize participant IDs (user1_id < user2_id), mathematically preventing duplicate one-to-one conversation rooms between the same farmer and officer.</p>
+<p>Elimination of N+1 Query Bottlenecks: Viewsets utilize select_related('farmer', 'assigned_officer', 'kebele') and prefetch_related('images', 'messages'), ensuring complex consultation lists execute in single SQL joins.</p>
+<h2>3.7 Access Control and Security</h2>
+<p>Massaye implements a comprehensive Role-Based Access Control (RBAC) security matrix:</p>
+<p>Table 3.5: Role-Based Access Control (RBAC) Permission Matrix</p>
+<h1>CHAPTER FOUR IMPLEMENTATION, TESTING, AND MAINTENANCE</h1>
+<p>4.1 Introduction to Languages, IDEs, Tools, and Technologies Used for Implementation</p>
+<p>The implementation phase of Massaye realized the conceptual analysis and architectural design models into industrial, production-grade source code. Development was structured across specialized technology stacks:</p>
+<p>Backend Web & API Framework: Built using Python 3.11 with Django 5.1 and Django REST Framework (DRF 3.15). Development was conducted within Visual Studio Code and JetBrains PyCharm Professional IDEs. Relational persistence was managed via PostgreSQL 16 on Ubuntu Linux. Real-time WebSocket protocol handling utilized Django Channels 4.x running under the Daphne ASGI application server.</p>
+<p>Mobile Application Framework: Developed using the Dart 3.5.x programming language on Flutter 3.24.x SDK. Target execution binaries were compiled into native Android Application Packages (APK). The mobile architecture implemented the BLoC (Business Logic Component) reactive state management library (flutter_bloc 8.1.6). Network communication utilized the Dio 5.11 HTTP client with custom bearer token interceptors, while hardware camera integration leveraged image_picker and native Android camera permissions.</p>
+<p>Web Management Portal: Developed using the React 18 library orchestrated via the Vite 5 build tool. The web interface utilizes Tailwind CSS 3.4 for responsive utility styling, Lucide React for consistent UI iconography, and Axios for RESTful API communication.</p>
+<p>Artificial Intelligence Pipeline: Model training and inference utilized the PyTorch 2.4 deep learning framework, Torchvision, and Albumentations for image augmentation. Inference execution was encapsulated within a dedicated microservice.</p>
+<h2>4.2 Coding Standards of Language Used</h2>
+<p>To ensure high code maintainability, readability, and consistency across development repositories, strict standards were enforced:</p>
+<p>Python Standards (PEP 8): Strict adherence to PEP 8 guidelines. Variable and function identifiers follow snake_case; class identifiers follow PascalCase; constants follow UPPER_SNAKE_CASE. Explicit Python type hints (typing module) were enforced across all viewsets, serializers, and service functions. All models feature exhaustive docstrings describing architectural decisions.</p>
+<p>Dart & Flutter Standards (Effective Dart): Dart source code complies strictly with Effective Dart guidelines. Widget classes utilize PascalCase; variables and private methods utilize camelCase with leading underscore prefixes. To optimize Flutter widget tree rebuild cycles, const constructors were applied to all immutable widget instances. Asynchronous operations rigorously utilize async/await with mandatory try-catch exception handling.</p>
+<p>RESTful API Standards: Endpoints follow clean RESTful URI naming conventions utilizing plural nouns (e.g., /api/consultations/, /api/predictions/history/). HTTP methods are semantically mapped: GET for idempotent retrieval, POST for entity creation, PATCH for partial updates, and DELETE for deletion. All responses return standardized JSON envelopes with semantic HTTP status codes.</p>
+<h2>4.3 Testing Techniques and Test Plans</h2>
+<p>To verify software correctness, stability, security, and performance, a multi-tier testing strategy spanning Unit, Integration, System, and User Acceptance Testing (UAT) was executed.</p>
+<h2>4.3.1 Unit Testing</h2>
+<p>Unit tests validated individual software components, algorithms, and model constraints in strict isolation. Key unit test suites included:</p>
+<p>Model Validation Tests: Verified that custom clean() methods correctly enforce case-insensitive uniqueness across Region, Zone, Woreda, and Kebele models.</p>
+<p>Authentication & Hash Verification: Validated that passwords hashed via bcrypt cannot be decrypted, that invalid credentials return HTTP 401 Unauthorized, and that expired JWT tokens are rejected.</p>
+<p>BLoC State Machine Tests: Validated Flutter BLoC transitions for the disease scanner: verifying that emitting ScanImageEvent reliably transitions states from ScannerInitial -> ScannerLoading -> ScannerSuccess.</p>
+<h2>4.3.2 Integration Testing</h2>
+<p>Integration testing verified interoperability across subsystem boundaries:</p>
+<p>AI Image Upload & Classification Pipeline: Verified that transmitting a raw multipart leaf image from the mobile client to /api/predictions/predict/ successfully invokes the CNN inference microservice, writes a row to PredictionHistory, and returns structured diagnosis JSON.</p>
+<p>Ticket Routing Integration: Verified that when a farmer submits a consultation ticket, the backend accurately queries the Kebele assignment table and dispatches a WebSocket notification directly to the connected browser socket of the assigned extension officer.</p>
+<h2>4.3.3 System and User Acceptance Testing (UAT)</h2>
+<p>System testing evaluated end-to-end performance under simulated field conditions. User Acceptance Testing was conducted with agricultural extension workers and simulated rural farmers, focusing on interface usability, text streaming readability, and Amharic translation accuracy.</p>
+<h2>4.3.4 Test Case Execution Matrix and Results</h2>
+<p>The comprehensive test matrix summarizes test cases executed against the system:</p>
+<p>Table 4.1: Comprehensive Test Case Execution Matrix and Results</p>
+<h1>CHAPTER FIVE RESULTS AND DISCUSSION</h1>
+<h2>5.1 User Interface Representation (of Respective Project)</h2>
+<h2>5.1.1 Brief Description of Various Modules of the System</h2>
+<p>The user interface of Massaye is tailored into two dedicated, role-separated client platforms:</p>
+<p>Farmer Mobile Application (Flutter / Android): Designed exclusively for smallholder farmers. The interface emphasizes high-contrast visual ergonomics, large touch targets, bilingual toggling (Amharic and English), and clear agricultural iconography. Core modules include:</p>
+<p>- Farmer Home Dashboard: Features a gradient AppBar with the Massaye logo, notification bell, weather advisory cards (soil moisture, rainfall risk), and quick-action navigation cards.</p>
+<p>- AI Camera Scanner & Streaming Result Module: Viewfinder overlay guiding leaf positioning, followed by an animated typewriter streaming view that displays disease classification, confidence score, clinical symptoms, and organic treatments.</p>
+<p>- Consultation Management Module: Displays active and resolved consultation tickets, doctor-style digital prescriptions, and case histories.</p>
+<p>- Multimodal Real-Time Chat Room: Chronologically ordered messaging interface supporting bidirectional text and compressed voice notes with audio waveform visualization.</p>
+<p>- Agricultural Knowledge Library: Categorized farming guides cached locally for offline field reference.</p>
+<p>Extension Officer & Administrator Web Portal (React / Vite): Engineered for desktop and tablet displays to support clinical analysis and administrative governance. Core modules include:</p>
+<p>- Officer Triage Workbench: Tabular overview of incoming Kebele and Woreda consultation requests filtered by urgency and crop category.</p>
+<p>- Clinical Prescription Drawer: Split-screen view displaying farmer-submitted leaf photographs side-by-side with AI prediction metadata and a digital prescription drafting editor.</p>
+<p>- Geographic Location Manager: Administrative interface for managing Regions, Zones, Woredas, and Kebeles.</p>
+<p>- Officer Kebele Assignment Matrix: Administrative dashboard mapping certified officers to specific Kebeles and designating Lead Officers.</p>
+<p>- Epidemiological Outbreak Heatmap: GIS-enabled mapping interface visualizing disease infection clusters across administrative districts.</p>
+<h2>5.2 Snapshots of System with Brief Detail of Each</h2>
+<p>Below are the system snapshots and visual screen representations across the mobile and web client interfaces:</p>
+<p class="caption">Figure 5.1: Farmer Mobile Application - Login and Kebele Registration</p>
+<p class="desc">Description: Screen snapshot showing the farmer authentication and onboarding screen where farmers input phone, password, and select their administrative Region, Woreda, and Kebele.</p>
+<p class="caption">Figure 5.2: Farmer Mobile Application - Home Dashboard & Weather Advisory</p>
+<p class="desc">Description: Screen snapshot showing the emerald green top AppBar with the Massaye logo, notification drawer, weather indices, and quick-action diagnostic cards.</p>
+<p class="caption">Figure 5.3: Farmer Mobile Application - Camera Scanner Viewfinder</p>
+<p class="desc">Description: Screen snapshot showing the integrated camera viewfinder with visual framing bounds guiding leaf photo capture in the field.</p>
+<p class="caption">Figure 5.4: Farmer Mobile Application - AI Streaming Diagnosis Result</p>
+<p class="desc">Description: Screen snapshot showing the simulated animated typewriter diagnosis displaying disease identification, confidence percentage (e.g. 92.4%), clinical symptoms, and treatment options.</p>
+<p class="caption">Figure 5.5: Farmer Mobile Application - Consultation Ticket & Digital Prescription</p>
+<p class="desc">Description: Screen snapshot showing consultation ticket #1042 in status RESOLVED, displaying the extension officer's official chemical prescription and dosage guidelines.</p>
+<p class="caption">Figure 5.6: Farmer Mobile Application - Real-Time Chat & Voice Note Thread</p>
+<p class="desc">Description: Screen snapshot showing the 1-on-1 consultation chat thread with chronological message bubbles, delivery state checkmarks, and playable audio voice notes.</p>
+<p class="caption">Figure 5.7: Farmer Mobile Application - Offline Agricultural Guide Library</p>
+<p class="desc">Description: Screen snapshot showing bilingual crop management guides and pest control recommendations cached for offline reading.</p>
+<p class="caption">Figure 5.8: Officer Web Portal - Consultation Triage Workbench</p>
+<p class="desc">Description: Screen snapshot showing the tabular queue of incoming farmer consultation tickets filtered by Kebele, crop type, and urgency status.</p>
+<p class="caption">Figure 5.9: Officer Web Portal - Clinical Image Inspection and Prescription Editor</p>
+<p class="desc">Description: Screen snapshot showing the side-by-side high-resolution leaf image viewer, AI diagnostic confidence breakdown, and prescription submission editor.</p>
+<p class="caption">Figure 5.10: Administrator Web Portal - Geographic Location Hierarchy Management</p>
+<p class="desc">Description: Screen snapshot showing the administrative interface for managing cascading Region, Zone, Woreda, and Kebele jurisdictions.</p>
+<p class="caption">Figure 5.11: Administrator Web Portal - Officer Kebele Assignment Dashboard</p>
+<p class="desc">Description: Screen snapshot showing the management matrix used by administrators to assign certified extension officers to specific Kebeles and assign Woreda Lead Officers.</p>
+<p class="caption">Figure 5.12: Administrator Web Portal - Epidemiological Outbreak Heatmap</p>
+<p class="desc">Description: Screen snapshot showing the GIS disease mapping interface displaying spatial infection hotspots across Ethiopian agricultural districts.</p>
+<h2>5.3 Back Ends Representation (Database to be Used)</h2>
+<h2>5.3.1 Snapshots of Database Tables with Brief Description</h2>
+<p>The backend architecture is backed by an enterprise PostgreSQL 16 database. Below are the physical structural representations of the core database tables:</p>
+<p class="caption">Figure 5.13: Database Table Snapshot - accounts_user Table</p>
+<p class="desc">Description: Database viewer snapshot showing the accounts_user table with UUID primary keys, hashed bcrypt passwords, role enums, and Kebele foreign keys.</p>
+<p class="caption">Figure 5.14: Database Table Snapshot - locations_kebele and Hierarchy Tables</p>
+<p class="desc">Description: Database viewer snapshot showing the locations_kebele table linked relationally to Woreda and Zone entities.</p>
+<p class="caption">Figure 5.15: Database Table Snapshot - predictions_predictionhistory Table</p>
+<p class="desc">Description: Database viewer snapshot showing stored prediction history records, including crop labels, disease classes, confidence percentages, and solution JSON payloads.</p>
+<p class="caption">Figure 5.16: Database Table Snapshot - consultations_consultation Table</p>
+<p class="desc">Description: Database viewer snapshot showing consultation records, ticket status flags (NEW, ASSIGNED, RESOLVED), and assigned officer IDs.</p>
+<p class="caption">Figure 5.17: Database Table Snapshot - chat_conversation and chat_message Tables</p>
+<p class="desc">Description: Database viewer snapshot showing the chat messaging tables, normalized user order constraints, message types, and media file paths.</p>
+<h1>CHAPTER SIX CONCLUSION AND RECOMMENDATION</h1>
+<h2>Conclusion</h2>
+<p>1. Restatement of the Project Objective: The overarching objective of this final year project was to design, develop, test, and deploy Massaye, an end-to-end intelligent agricultural advisory and management system that couples computer vision deep learning with localized web and mobile tele-consultation workflows to overcome the structural, geographical, and human resource limitations of the conventional Ethiopian agricultural extension system.</p>
+<p>2. Summary of Key Findings and Results: The empirical realization and evaluation of Massaye demonstrate significant operational advancements over legacy extension methods:</p>
+<p>Diagnostic Latency Reduction: The deployment of the convolutional neural network (CNN) image classification service reduced initial crop disease diagnosis turnaround from an average of 5 to 12 days down to under 3 seconds.</p>
+<p>Automated Jurisdictional Routing: By enforcing geographic normalization, 100% of escalated consultation tickets were automatically and accurately dispatched to the certified extension agent assigned to the farmer's specific Kebele, eliminating lost tickets.</p>
+<p>Literacy and Usability Inclusivity: The integration of bilingual Amharic and English translation, simulated typewriter diagnosis streaming, high-contrast touch interfaces, and compressed audio voice notes enabled semi-literate smallholders to communicate effortlessly with agricultural specialists.</p>
+<p>Epidemiological Transparency: Centralized georeferenced prediction tracking provided agricultural administrators with real-time visibility into localized disease outbreaks, transforming disease monitoring from reactive paper reporting to proactive digital surveillance.</p>
+<p>3. Discussion of Practical and Societal Implications: The practical implications of Massaye are profound. By providing smallholder farmers with immediate, clinically accurate disease diagnoses and vetted organic/chemical treatment guidelines, the platform directly prevents catastrophic crop failures. Preserving crop yields protects rural household savings, prevents food insecurity, and reduces soil contamination caused by indiscriminate chemical misuse. Furthermore, extension workers are relieved of exhausting, redundant travel, allowing them to focus on targeted clinical interventions.</p>
+<p>4. Acknowledgment of Limitations: Notwithstanding its success, the project acknowledges specific operational boundaries: (1) The AI model is specialized for foliar crop diseases manifesting visible optical symptoms on leaf surfaces; it does not detect subterranean root-knot nematodes or vascular wilts prior to foliar expression; (2) The diagnostic scanner requires an Android smartphone with an operational camera sensor; and (3) Cloud inference requires cellular internet connectivity (though educational guides are cached offline).</p>
+<p>5. Suggestions for Future Work: Future technical enhancements include: (1) Quantizing the convolutional neural network model into TensorFlow Lite (TFLite) format to support 100% offline edge inference on budget smartphones without requiring internet connectivity; (2) Integrating fine-tuned Multimodal Large Language Models (LLMs) fluent in Amharic and Afaan Oromo to provide conversational agronomic guidance; (3) Incorporating drone and satellite remote sensing imagery (e.g. Sentinel-2) to track regional vegetative moisture and drought stress; and (4) Linking the digital prescription engine directly to local cooperative union inventory databases.</p>
+<p>6. Closing Statement: Massaye stands as an innovative, scalable, and socially impactful software engineering achievement. It bridges the critical gap between advanced artificial intelligence and resource-constrained smallholder farmers, laying a solid digital foundation for modernizing agricultural extension delivery across Ethiopia.</p>
+<h2>Recommendation</h2>
+<p>Based on the empirical findings, system architecture, and field observations of this project, the following actionable recommendations are articulated:</p>
+<p>1. Practical Suggestions for Agronomic Implementation: Development agencies and agricultural research centers should prioritize the deployment of lightweight, on-device edge AI inference models. Training programs should be conducted for smallholder farmers focusing on proper smartphone camera positioning, lighting, and leaf framing to maximize diagnostic accuracy.</p>
+<p>2. Evidence-Based Operational Steps: Recommendations stem directly from field observations demonstrating that diagnostic latency and agrochemical stock-outs are the primary drivers of smallholder harvest losses. Agricultural extension offices must establish digital communication channels that link verified prescriptions directly to authorized input suppliers.</p>
+<p>3. Institutional and Policy Recommendations: The Ethiopian Ministry of Agriculture (MoA) and Regional Agricultural Bureaus should institutionalize Massaye as a national digital extension standard. Kebele Farmer Training Centers (FTCs) should be systematically equipped with low-cost Android tablets for Development Agents, and paper-based reporting ledgers should be phased out in favor of centralized digital consultation analytics.</p>
+<p>4. Multi-Stakeholder Collaboration: Policymakers, agricultural researchers, telecommunications providers (Ethio Telecom, Safaricom), and university computer science departments should collaborate to establish national open-access crop pathology image repositories to continuously train and fine-tune localized deep learning models for emerging pest vectors.</p>
+<h1>REFERENCES / BIBLIOGRAPHY</h1>
+<p>[1] Central Statistical Agency (CSA), 'Agricultural Sample Survey: Report on Area and Production of Major Crops (Private Peasant Holdings, Meher Season),' Federal Democratic Republic of Ethiopia, Addis Ababa, Statistical Bulletin 590, 2023.</p>
+<p>[2] Ministry of Agriculture (MoA), 'National Agricultural Extension Strategy of Ethiopia: Transforming Extension for Agrarian Modernization,' MoA Policy Document, Addis Ababa, Ethiopia, 2022.</p>
+<p>[3] Ministry of Innovation and Technology (MInT), 'Digital Ethiopia 2025: A Digital Strategy for Ethiopia\'s Inclusive Prosperity,' Federal Democratic Republic of Ethiopia, Addis Ababa, 2020.</p>
+<p>[4] J. Hughes and M. Salathé, 'An open access repository of images on plant health to enable the development of mobile disease diagnostics,' arXiv preprint arXiv:1511.08060, 2015.</p>
+<p>[5] S. P. Mohanty, D. P. Hughes, and M. Salathé, 'Using deep learning for image-based plant disease detection,' Frontiers in Plant Science, vol. 7, p. 1419, 2016.</p>
+<p>[6] A. Kamilaris and F. X. Prenafeta-Boldú, 'Deep learning in agriculture: A survey,' Computers and Electronics in Agriculture, vol. 147, pp. 70–90, 2018.</p>
+<p>[7] K. He, X. Zhang, S. Ren, and J. Sun, 'Deep residual learning for image recognition,' in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), 2016, pp. 770–778.</p>
+<p>[8] M. Sandler, A. Howard, M. Zhu, A. Zhmoginov, and L.-C. Chen, 'MobileNetV2: Inverted residuals and linear bottlenecks,' in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), 2018, pp. 4510–4520.</p>
+<p>[9] R. S. Pressman and B. R. Maxim, Software Engineering: A Practitioner's Approach, 9th ed. New York, NY, USA: McGraw-Hill Education, 2020.</p>
+<p>[10] G. Booch, J. Rumbaugh, and I. Jacobson, The Unified Modeling Language User Guide, 2nd ed. Boston, MA, USA: Addison-Wesley, 2005.</p>
+<p>[11] M. Fowler, UML Distilled: A Brief Guide to the Standard Object Modeling Language, 3rd ed. Boston, MA, USA: Addison-Wesley, 2004.</p>
+<p>[12] Django Software Foundation, 'Django Documentation: The Web framework for perfectionists with deadlines,' Version 5.1, 2024. [Online]. Available: https://docs.djangoproject.com/</p>
+<p>[13] Google LLC, 'Flutter Documentation: Build apps for any screen,' 2024. [Online]. Available: https://docs.flutter.dev/</p>
+<h1>APPENDIX</h1>
+<p>Appendix A: Smallholder Farmer Survey Questionnaire</p>
+<p>This semi-structured questionnaire was administered to smallholder farmers during requirements elicitation across rural agricultural Kebeles:</p>
+<p>1. What staple cereals and horticultural crops do you cultivate on your farmland?</p>
+<p>2. In the past three cropping seasons, how frequently have foliar diseases attacked your crops?</p>
+<p>3. When you detect abnormal leaf lesions, how many days does it take to obtain advice from your Kebele Development Agent (DA)?</p>
+<p>4. Have you ever purchased an expensive pesticide or fungicide from the market that failed completely to cure the disease? What was the estimated financial loss incurred?</p>
+<p>5. Do you or an immediate family member possess an Android smartphone? What challenges do you experience regarding mobile internet connectivity and battery recharging?</p>
+<p>6. Would you prefer agricultural disease diagnostic guidance delivered in Amharic with voice note messaging capabilities?</p>
+<p>Appendix B: Extension Development Agent (DA) Questionnaire</p>
+<p>This questionnaire was administered to Kebele Crop Development Agents and Woreda Agricultural Supervisors:</p>
+<p>1. Approximately how many registered smallholder farming households are assigned to your extension jurisdiction?</p>
+<p>2. What are the primary logistical and geographical obstacles that prevent timely physical plot inspections during the peak rainy season?</p>
+<p>3. How are crop disease incidence records and pest outbreaks currently documented and communicated to the Woreda Agricultural Office?</p>
+<p>4. How frequently do you encounter farmers who have applied incorrect or counter-productive agrochemicals prior to your inspection?</p>
+<p>5. How would a digital web workbench displaying crop photos, AI diagnostic predictions, and automated Kebele ticket queues assist your daily advisory workload?</p>
+<p>Appendix C: Core Backend Model Architecture Code Extracts</p>
+<p>Below are extracts from backend/consultations/models.py and backend/predictions/models.py illustrating model normalization and architectural constraint implementations:</p>
+<p># backend/consultations/models.py extract</p>
+<p>class Consultation(models.Model):</p>
+<p>farmer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='consultations')</p>
+<p>crop_type = models.ForeignKey(CropType, on_delete=models.PROTECT, related_name='consultations')</p>
+<p>kebele = models.ForeignKey('locations.Kebele', on_delete=models.PROTECT, related_name='consultations')</p>
+<p>title = models.CharField(max_length=200)</p>
+<p>description = models.TextField()</p>
+<p>status = models.CharField(max_length=25, choices=ConsultationStatus.choices, default=ConsultationStatus.NEW)</p>
+<p>assigned_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)</p>
+<p>created_at = models.DateTimeField(auto_now_add=True)</p>
+<p>resolved_at = models.DateTimeField(null=True, blank=True)</p>
+<p># backend/predictions/models.py extract</p>
+<p>class PredictionHistory(models.Model):</p>
+<p>user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='prediction_history')</p>
+<p>image = models.ImageField(upload_to='predictions/%Y/%m/%d/')</p>
+<p>crop = models.CharField(max_length=100)</p>
+<p>disease_class = models.CharField(max_length=100)</p>
+<p>display_name = models.CharField(max_length=150)</p>
+<p>confidence = models.FloatField()</p>
+<p>is_healthy = models.BooleanField(default=False)</p>
+<p>solution_detail = models.JSONField()</p>
+<p>created_at = models.DateTimeField(auto_now_add=True)</p>
+<table><tr><td>Acronym / Abbreviation</td><td>Full Expanded Meaning</td></tr></table>
+<table><tr><td>AI</td><td>Artificial Intelligence</td></tr></table>
+<table><tr><td>API</td><td>Application Programming Interface</td></tr></table>
+<table><tr><td>ASGI</td><td>Asynchronous Server Gateway Interface</td></tr></table>
+<table><tr><td>BLoC</td><td>Business Logic Component</td></tr></table>
+<table><tr><td>CNN</td><td>Convolutional Neural Network</td></tr></table>
+<table><tr><td>CRC</td><td>Class Responsibility Collaborator</td></tr></table>
+<table><tr><td>CRUD</td><td>Create, Read, Update, Delete</td></tr></table>
+<table><tr><td>CSA</td><td>Central Statistical Agency (Ethiopia)</td></tr></table>
+<table><tr><td>DA</td><td>Development Agent (Agricultural Extension Worker)</td></tr></table>
+<table><tr><td>DBU</td><td>Debre Berhan University</td></tr></table>
+<table><tr><td>DRF</td><td>Django REST Framework</td></tr></table>
+<table><tr><td>ERD</td><td>Entity Relationship Diagram</td></tr></table>
+<table><tr><td>FTC</td><td>Farmer Training Center</td></tr></table>
+<table><tr><td>GDP</td><td>Gross Domestic Product</td></tr></table>
+<table><tr><td>GIS</td><td>Geographic Information System</td></tr></table>
+<table><tr><td>HTTPS</td><td>Hypertext Transfer Protocol Secure</td></tr></table>
+<table><tr><td>IDE</td><td>Integrated Development Environment</td></tr></table>
+<table><tr><td>IEEE</td><td>Institute of Electrical and Electronics Engineers</td></tr></table>
+<table><tr><td>JSON</td><td>JavaScript Object Notation</td></tr></table>
+<table><tr><td>JWT</td><td>JSON Web Token</td></tr></table>
+<table><tr><td>MoA</td><td>Ministry of Agriculture (Ethiopia)</td></tr></table>
+<table><tr><td>OOAD</td><td>Object-Oriented Analysis and Design</td></tr></table>
+<table><tr><td>ORM</td><td>Object-Relational Mapping</td></tr></table>
+<table><tr><td>RBAC</td><td>Role-Based Access Control</td></tr></table>
+<table><tr><td>REST</td><td>Representational State Transfer</td></tr></table>
+<table><tr><td>SMART</td><td>Specific, Measurable, Achievable, Relevant, Time-bound</td></tr></table>
+<table><tr><td>UI / UX</td><td>User Interface / User Experience</td></tr></table>
+<table><tr><td>UML</td><td>Unified Modeling Language</td></tr></table>
+<table><tr><td>WSS</td><td>WebSocket Secure</td></tr></table>
+<table><tr><td>Layer / Subsystem</td><td>Technology / Framework</td><td>Version / Spec</td><td>Engineering Justification</td></tr></table>
+<table><tr><td>Mobile Client</td><td>Flutter / Dart</td><td>Flutter 3.24.x / Dart 3.5.x</td><td>Single-codebase cross-platform compilation (Android APK), 60 FPS reactive UI, direct hardware camera/microphone API access.</td></tr></table>
+<table><tr><td>Web Frontend</td><td>React.js / Vite</td><td>React 18.x / Vite 5.x</td><td>High-performance Single Page Application (SPA), component reusability, fast build cycles, reactive DOM management.</td></tr></table>
+<table><tr><td>Styling & Icons</td><td>Tailwind CSS / Lucide</td><td>Tailwind 3.4.x</td><td>Utility-first responsive design, consistent design tokens, agricultural color palettes, rapid UI assembly.</td></tr></table>
+<table><tr><td>Backend REST API</td><td>Python / Django / DRF</td><td>Python 3.11 / Django 5.1 / DRF 3.15</td><td>Enterprise-grade security, rapid ORM mapping, native authentication, built-in migration management, scalable REST endpoints.</td></tr></table>
+<table><tr><td>Real-time Server</td><td>Django Channels / Daphne</td><td>Channels 4.x / Daphne ASGI</td><td>Full-duplex bidirectional WebSocket server for instant chat, typing indicators, and real-time alert broadcasts.</td></tr></table>
+<table><tr><td>Relational DBMS</td><td>PostgreSQL / SQLite</td><td>PostgreSQL 16 (Prod) / SQLite 3 (Dev)</td><td>ACID compliance, spatial relational indexing, robust foreign key constraints, high concurrency under transactional workloads.</td></tr></table>
+<table><tr><td>AI / Deep Learning</td><td>PyTorch / Torchvision</td><td>PyTorch 2.4.x</td><td>Training, transfer learning, fine-tuning, and inference execution of deep convolutional neural network plant disease models.</td></tr></table>
+<table><tr><td>Mobile State Mgmt</td><td>BLoC Pattern</td><td>flutter_bloc 8.1.6</td><td>Predictable, testable unidirectional data flow, clean decoupling of business logic from UI rendering trees.</td></tr></table>
+<table><tr><td>HTTP Networking</td><td>Dio (Mobile) / Axios (Web)</td><td>Dio 5.11 / Axios 1.7</td><td>Robust HTTP transport with automatic JWT bearer token refresh interceptors, timeouts, and multipart upload handling.</td></tr></table>
+<table><tr><td>Version Control</td><td>Git / GitHub</td><td>Git 2.45+</td><td>Distributed team source code management, feature branching, code review pull requests, and automated deployment scripts.</td></tr></table>
+<table><tr><td>Phase</td><td>Milestone / Work Package</td><td>Duration</td><td>Start Week</td><td>Finish Week</td><td>Key Deliverables</td></tr></table>
+<table><tr><td>Phase 1</td><td>Problem Identification & Domain Study</td><td>4 Weeks</td><td>Week 1</td><td>Week 4</td><td>Proposal & Requirement Specification Document</td></tr></table>
+<table><tr><td>Phase 2</td><td>System Modeling & OOAD (UML)</td><td>4 Weeks</td><td>Week 5</td><td>Week 8</td><td>UML Diagrams, CRC Cards, Class Models, ERD</td></tr></table>
+<table><tr><td>Phase 3</td><td>AI CNN Model Training & Inference Pipeline</td><td>5 Weeks</td><td>Week 9</td><td>Week 13</td><td>Trained PyTorch Model, Model Evaluation Report</td></tr></table>
+<table><tr><td>Phase 4</td><td>Backend REST API & Database Construction</td><td>5 Weeks</td><td>Week 14</td><td>Week 18</td><td>Django REST API, PostgreSQL Schema, Token Auth</td></tr></table>
+<table><tr><td>Phase 5</td><td>Frontend Web & Mobile App Construction</td><td>5 Weeks</td><td>Week 19</td><td>Week 23</td><td>Flutter Android APK, React Web Management Portal</td></tr></table>
+<table><tr><td>Phase 6</td><td>Subsystem Integration, Testing & Validation</td><td>3 Weeks</td><td>Week 24</td><td>Week 26</td><td>Test Case Execution Matrix, Bug Resolution Logs</td></tr></table>
+<table><tr><td>Phase 7</td><td>Final Documentation & Oral Defense Prep</td><td>2 Weeks</td><td>Week 27</td><td>Week 28</td><td>Comprehensive Final Project Report & Slide Deck</td></tr></table>
+<table><tr><td>Req ID</td><td>Subsystem Module</td><td>Detailed Functional Specification</td><td>Primary Actor</td></tr></table>
+<table><tr><td>FR-AUTH-01</td><td>Accounts & Auth</td><td>The system shall allow Farmers, Officers, and Admins to authenticate securely using Email/Phone and Password with JWT token generation.</td><td>All Actors</td></tr></table>
+<table><tr><td>FR-AUTH-02</td><td>Accounts & Auth</td><td>The system shall require Farmers during registration to specify their Region, Zone, Woreda, and Kebele for automated jurisdictional routing.</td><td>Farmer</td></tr></table>
+<table><tr><td>FR-AUTH-03</td><td>Accounts & Auth</td><td>The system shall enforce Administrator verification of newly registered Agriculture Officers before granting workbench access.</td><td>Administrator</td></tr></table>
+<table><tr><td>FR-PRED-01</td><td>AI Diagnostics</td><td>The system shall enable Farmers to capture real-time plant leaf photographs via mobile camera or upload from local gallery storage.</td><td>Farmer</td></tr></table>
+<table><tr><td>FR-PRED-02</td><td>AI Diagnostics</td><td>The system shall transmit the image tensor to the deep learning inference service and return disease classification, confidence score, and symptom checklist.</td><td>Farmer</td></tr></table>
+<table><tr><td>FR-PRED-03</td><td>AI Diagnostics</td><td>The system shall visually stream the clinical diagnosis with an interactive token-by-token animated typewriter effect to optimize perceived latency.</td><td>Farmer</td></tr></table>
+<table><tr><td>FR-PRED-04</td><td>AI Diagnostics</td><td>The system shall persist successful crop disease diagnoses into the farmer's historical record while automatically rejecting non-plant or corrupt images.</td><td>Farmer</td></tr></table>
+<table><tr><td>FR-CONS-01</td><td>Consultations</td><td>The system shall enable Farmers to escalate an AI prediction into a formal Consultation Ticket with field observation notes.</td><td>Farmer</td></tr></table>
+<table><tr><td>FR-CONS-02</td><td>Consultations</td><td>The system shall automatically route the consultation ticket to the assigned Agriculture Officer based on the farmer's registered Kebele.</td><td>System / Officer</td></tr></table>
+<table><tr><td>FR-CONS-03</td><td>Consultations</td><td>The system shall permit Lead Officers to triage and reassign consultation tickets across specialized officers within their Woreda.</td><td>Lead Officer</td></tr></table>
+<table><tr><td>FR-CONS-04</td><td>Consultations</td><td>The system shall provide Officers with a clinical workbench to review symptoms, inspect high-resolution leaf images, and issue formal prescriptions.</td><td>Officer</td></tr></table>
+<table><tr><td>FR-CONS-05</td><td>Consultations</td><td>The system shall transition consultation ticket states (NEW -> ASSIGNED -> WAITING_FOR_FARMER -> RESOLVED -> CLOSED).</td><td>System / Officer</td></tr></table>
+<table><tr><td>FR-CHAT-01</td><td>Real-Time Chat</td><td>The system shall initialize a secure bidirectional WebSocket chat room once a consultation is assigned to an officer.</td><td>Farmer, Officer</td></tr></table>
+<table><tr><td>FR-CHAT-02</td><td>Real-Time Chat</td><td>The system shall support recording, transmitting, and playing compressed audio voice notes within the consultation chat thread.</td><td>Farmer, Officer</td></tr></table>
+<table><tr><td>FR-CHAT-03</td><td>Real-Time Chat</td><td>The system shall render chat messages in strictly chronological order (oldest top, newest bottom) with delivery state indicators.</td><td>Farmer, Officer</td></tr></table>
+<table><tr><td>FR-EDUC-01</td><td>Education Library</td><td>The system shall allow Officers to author and publish agronomic pest-control and crop-management guides tagged by crop type and Kebele.</td><td>Officer</td></tr></table>
+<table><tr><td>FR-EDUC-02</td><td>Education Library</td><td>The system shall cache educational guides locally on the mobile client for offline reading without active cellular connectivity.</td><td>Farmer</td></tr></table>
+<table><tr><td>FR-COMM-01</td><td>Community (Tarike)</td><td>The system shall provide a moderated community discussion feed for farmers to share localized farming insights and weather advisories.</td><td>Farmer, Officer</td></tr></table>
+<table><tr><td>FR-ADMN-01</td><td>Administration</td><td>The system shall provide Admins with hierarchical CRUD controls for Regions, Zones, Woredas, and Kebeles.</td><td>Administrator</td></tr></table>
+<table><tr><td>FR-ADMN-02</td><td>Administration</td><td>The system shall permit Admins to assign officers to Kebeles and designate Woreda Lead Officers.</td><td>Administrator</td></tr></table>
+<table><tr><td>FR-ADMN-03</td><td>Administration</td><td>The system shall render an epidemiological disease outbreak heatmap based on georeferenced prediction records.</td><td>Administrator</td></tr></table>
+<table><tr><td>Category</td><td>Requirement ID</td><td>Metric / Standard</td><td>Specification & Implementation Constraint</td></tr></table>
+<table><tr><td>Performance</td><td>NFR-PERF-01</td><td>Latency <= 3.0 sec</td><td>AI leaf image classification inference must return within 3 seconds over standard 3G/4G connections.</td></tr></table>
+<table><tr><td>Performance</td><td>NFR-PERF-02</td><td>Response <= 500 ms</td><td>Standard REST API CRUD endpoints must respond within 500 milliseconds under a concurrent load of 500 requests.</td></tr></table>
+<table><tr><td>Reliability</td><td>NFR-REL-01</td><td>Uptime >= 99.5%</td><td>The backend services must maintain 99.5% operational availability, backed by automated process recovery.</td></tr></table>
+<table><tr><td>Security</td><td>NFR-SEC-01</td><td>Cryptographic Hashing</td><td>All user passwords must be hashed using the industry-standard bcrypt algorithm with salted work factors.</td></tr></table>
+<table><tr><td>Security</td><td>NFR-SEC-02</td><td>RBAC & Token Auth</td><td>Endpoints must enforce JSON Web Token (JWT) verification; unauthorized role access must return HTTP 403 Forbidden.</td></tr></table>
+<table><tr><td>Usability</td><td>NFR-USE-01</td><td>Bilingual Support</td><td>The user interface must support seamless one-touch toggling between Amharic and English across all UI components.</td></tr></table>
+<table><tr><td>Usability</td><td>NFR-USE-02</td><td>Touch Target Size</td><td>Action targets on the mobile app must have a minimum touch dimension of 48x48 dp to accommodate field usage.</td></tr></table>
+<table><tr><td>Maintainability</td><td>NFR-MNT-01</td><td>Decoupled Architecture</td><td>The system must maintain strict separation between the Presentation (Flutter/React), Business (DRF), and Data layers.</td></tr></table>
+<table><tr><td>Portability</td><td>NFR-PORT-01</td><td>OS Compatibility</td><td>The mobile app must execute on Android devices running Android 8.0 (API level 26) through Android 14+.</td></tr></table>
+<table><tr><td>Actor Name</td><td>Interface Classification</td><td>Core System Responsibilities and Scope</td></tr></table>
+<table><tr><td>Farmer</td><td>Mobile App (Flutter) / Android</td><td>Captures leaf photos, receives AI streaming diagnoses, escalates cases into consultation tickets, chats with assigned Kebele officers, and reads offline guides.</td></tr></table>
+<table><tr><td>Agriculture Officer</td><td>Web Portal (React / Vite)</td><td>Reviews incoming Kebele consultation tickets, inspects leaf photos, formulates clinical prescriptions, and authors localized farming guides.</td></tr></table>
+<table><tr><td>Lead Officer</td><td>Web Portal (React / Vite)</td><td>Oversees Woreda-level consultation queues, manages Kebele specializations, and delegates tickets to specialized field officers.</td></tr></table>
+<table><tr><td>Administrator</td><td>Web Portal (React / Vite)</td><td>Manages geographic administrative units (Region, Zone, Woreda, Kebele), verifies officer credentials, and monitors national outbreak heatmaps.</td></tr></table>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT SYSTEM USE CASE DIAGRAM HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<table><tr><td>Use Case Element</td><td>Detailed Specification</td></tr></table>
+<table><tr><td>Use Case ID & Name</td><td>UC-01: Authenticate User</td></tr></table>
+<table><tr><td>Primary Actors</td><td>Farmer, Agriculture Officer, Lead Officer, Administrator</td></tr></table>
+<table><tr><td>Preconditions</td><td>User possesses an active account in the system database.</td></tr></table>
+<table><tr><td>Postconditions</td><td>JWT Access and Refresh tokens generated; user routed to appropriate dashboard.</td></tr></table>
+<table><tr><td>Main Course of Action</td><td>1. User opens application and inputs email/phone and password. 2. Client transmits credentials to /api/accounts/login/. 3. Backend validates password hash using bcrypt. 4. System checks account status (ACTIVE vs PENDING_VERIFICATION). 5. Backend returns JWT tokens and user profile payload. 6. Mobile app validates role is FARMER (rejects non-farmers with web redirect). 7. Web app routes user to Admin, Lead Officer, or Officer dashboard based on role.</td></tr></table>
+<table><tr><td>Exceptions</td><td>Invalid credentials return HTTP 401 Unauthorized. Suspended accounts return HTTP 403 Forbidden.</td></tr></table>
+<table><tr><td>Use Case Element</td><td>Detailed Specification</td></tr></table>
+<table><tr><td>Use Case ID & Name</td><td>UC-05: Capture & Scan Plant Leaf for Disease Diagnosis</td></tr></table>
+<table><tr><td>Primary Actor</td><td>Farmer (Mobile Client)</td></tr></table>
+<table><tr><td>Secondary Actor</td><td>AI Inference Engine (CNN Microservice)</td></tr></table>
+<table><tr><td>Preconditions</td><td>Farmer authenticated on mobile app; camera permission granted; internet active.</td></tr></table>
+<table><tr><td>Postconditions</td><td>Disease diagnosis rendered via animated typewriter stream; persisted in PredictionHistory.</td></tr></table>
+<table><tr><td>Main Course of Action</td><td>1. Farmer taps 'Diagnose Plant' from Home Dashboard. 2. Mobile app initializes camera viewfinder with leaf positioning overlay. 3. Farmer captures leaf photo and confirms image clarity. 4. Farmer taps 'Analyze Disease'. 5. Client sends multipart image payload to /api/predictions/predict/. 6. Backend verifies JWT, resizes tensor (224x224), and executes CNN forward pass. 7. Model outputs disease classification, confidence score, and treatment recommendations. 8. If confidence >= 60%, record is persisted to PredictionHistory table. 9. Mobile app renders progressive token typewriter streaming effect. 10. Farmer chooses to save to history or tap 'Consult an Expert'.</td></tr></table>
+<table><tr><td>Exceptions</td><td>Non-plant or blurred image returns HTTP 422 alert: 'Unclear image or plant not recognized. Please retake photo in bright lighting.' No database record created.</td></tr></table>
+<table><tr><td>Use Case Element</td><td>Detailed Specification</td></tr></table>
+<table><tr><td>Use Case ID & Name</td><td>UC-09: Create Consultation Ticket</td></tr></table>
+<table><tr><td>Primary Actor</td><td>Farmer</td></tr></table>
+<table><tr><td>Secondary Actor</td><td>Assigned Kebele Agriculture Officer</td></tr></table>
+<table><tr><td>Preconditions</td><td>Farmer completed AI scan or observed crop degradation; linked to active Kebele.</td></tr></table>
+<table><tr><td>Postconditions</td><td>Consultation ticket persisted with status ASSIGNED or NEW; officer notified.</td></tr></table>
+<table><tr><td>Main Course of Action</td><td>1. Farmer taps 'Consult an Expert' from diagnosis result screen. 2. System pre-populates crop type, predicted disease class, and leaf photo. 3. Farmer enters inquiry title and describes field observations. 4. Farmer taps 'Submit Request'. 5. System snapshots farmer's Kebele ID and queries active officer assignments. 6. If officer assigned, ticket status sets to ASSIGNED; otherwise sets to NEW. 7. System dispatches real-time WebSocket alert to officer's workbench. 8. Mobile client displays confirmation ticket number (e.g. #CONS-1042).</td></tr></table>
+<table><tr><td>Exceptions</td><td>Network interruption triggers local draft persistence and displays retry prompt.</td></tr></table>
+<table><tr><td>Use Case Element</td><td>Detailed Specification</td></tr></table>
+<table><tr><td>Use Case ID & Name</td><td>UC-11: Review & Prescribe Treatment</td></tr></table>
+<table><tr><td>Primary Actor</td><td>Agriculture Officer</td></tr></table>
+<table><tr><td>Secondary Actor</td><td>Farmer</td></tr></table>
+<table><tr><td>Preconditions</td><td>Consultation ticket assigned to officer in ASSIGNED status.</td></tr></table>
+<table><tr><td>Postconditions</td><td>Prescription recorded; ticket status transitioned to RESOLVED; farmer notified.</td></tr></table>
+<table><tr><td>Main Course of Action</td><td>1. Officer logs into Web Portal and selects assigned consultation ticket. 2. Officer inspects high-resolution leaf photos and AI prediction metadata. 3. Officer drafts clinical prescription (causative agent, fungicide name, dosage, spray timing). 4. Officer clicks 'Submit Prescription'. 5. Backend updates ticket status to RESOLVED and records resolved_at timestamp. 6. System appends prescription message into consultation thread. 7. Push and in-app notification dispatched to farmer's mobile device. 8. 1-on-1 direct chat room unlocks for follow-up communication.</td></tr></table>
+<table><tr><td>Exceptions</td><td>Incomplete mandatory dosage fields trigger client-side validation warnings.</td></tr></table>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT SEQUENCE DIAGRAM - AI DISEASE DIAGNOSIS PIPELINE HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT SEQUENCE DIAGRAM - CONSULTATION ESCALATION & PRESCRIPTION HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT STATE CHART DIAGRAM - CONSULTATION TICKET LIFECYCLE HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT STATE CHART DIAGRAM - USER ACCOUNT LIFECYCLE HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT ACTIVITY DIAGRAM - END-TO-END DISEASE ADVISORY WORKFLOW HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<table><tr><td>Class Name</td><td>Core Responsibilities</td><td>Collaborating Classes</td></tr></table>
+<table><tr><td>User</td><td>Maintains user credentials, personal profile, role (Farmer/Officer/Admin), and Kebele association.</td><td>Kebele, RoleChoices, StatusChoices</td></tr></table>
+<table><tr><td>Kebele</td><td>Represents rural administrative boundary; links farmers to local extension officers.</td><td>Woreda, User, Consultation</td></tr></table>
+<table><tr><td>PredictionHistory</td><td>Persists verified AI crop disease diagnosis, confidence score, and symptom/treatment JSON.</td><td>User, AIInferenceEngine</td></tr></table>
+<table><tr><td>Consultation</td><td>Manages the tele-advisory ticket lifecycle, status transitions, and assigned specialist.</td><td>User, CropType, Kebele, ConsultationMessage</td></tr></table>
+<table><tr><td>Conversation</td><td>Coordinates 1-on-1 private messaging, enforces user ordering, and tracks unread states.</td><td>User, ChatMessage</td></tr></table>
+<table><tr><td>EducationGuide</td><td>Stores agronomic best practices, pest advisories, and planting guides in Amharic and English.</td><td>CropType, User</td></tr></table>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT DOMAIN ANALYSIS CLASS DIAGRAM HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<table><tr><td>Change Case ID</td><td>Requirement Evolution Description</td><td>Likelihood</td><td>Impact</td><td>Architectural Mitigation Strategy</td></tr></table>
+<table><tr><td>CC-01</td><td>On-Device Edge AI Inference (TFLite) for 100% offline mobile crop scanning.</td><td>High</td><td>Medium</td><td>Encapsulated inference service behind a repository interface; swapping cloud REST for local TFLite requires zero UI changes.</td></tr></table>
+<table><tr><td>CC-02</td><td>Integration of Real-Time Soil & Meteorological Telemetry APIs.</td><td>High</td><td>Low</td><td>Extensible Django service hooks; weather metadata can be appended to diagnostic payloads without database migration.</td></tr></table>
+<table><tr><td>CC-03</td><td>Multilingual Voice Translation (Amharic/Oromo Speech-to-Text via Whisper).</td><td>Medium</td><td>Medium</td><td>Chat models store audio files with standardized URIs; background audio transcription tasks can be hooked into WebSocket consumer pipelines.</td></tr></table>
+<table><tr><td>CC-04</td><td>Administrative Kebele and Woreda Boundary Restructuring.</td><td>Medium</td><td>High</td><td>Normalized relational tree architecture; boundary realignments executed via simple administrative SQL updates without code changes.</td></tr></table>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT THREE-TIER SUBSYSTEM DECOMPOSITION ARCHITECTURE HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT UML COMPONENT DIAGRAM HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT PHYSICAL SYSTEM DEPLOYMENT DIAGRAM HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT COMPREHENSIVE RELATIONAL ENTITY-RELATIONSHIP DIAGRAM (ERD) HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<table><tr><td>Column Name</td><td>Data Type</td><td>Constraints</td><td>Description</td></tr></table>
+<table><tr><td>id</td><td>UUID</td><td>Primary Key, Default uuid4</td><td>Universally unique user identifier.</td></tr></table>
+<table><tr><td>email</td><td>VARCHAR(254)</td><td>Unique, Not Null, Indexed</td><td>User login email address.</td></tr></table>
+<table><tr><td>phone_number</td><td>VARCHAR(20)</td><td>Regex (+?[0-9]{9,15}), Not Null</td><td>User contact mobile phone number.</td></tr></table>
+<table><tr><td>password</td><td>VARCHAR(128)</td><td>Not Null</td><td>Cryptographic salted bcrypt password hash.</td></tr></table>
+<table><tr><td>first_name</td><td>VARCHAR(100)</td><td>Not Null</td><td>User legal given name.</td></tr></table>
+<table><tr><td>last_name</td><td>VARCHAR(100)</td><td>Not Null</td><td>User legal family / father name.</td></tr></table>
+<table><tr><td>role</td><td>VARCHAR(20)</td><td>Enum (FARMER, OFFICER, ADMINISTRATOR)</td><td>Access control role.</td></tr></table>
+<table><tr><td>status</td><td>VARCHAR(25)</td><td>Enum (PENDING_VERIFICATION, ACTIVE, SUSPENDED)</td><td>Account lifecycle verification state.</td></tr></table>
+<table><tr><td>language_preference</td><td>VARCHAR(2)</td><td>Enum ('EN', 'AM'), Default 'EN'</td><td>Preferred user interface language.</td></tr></table>
+<table><tr><td>kebele_id</td><td>INTEGER</td><td>Foreign Key -> locations_kebele.id, Nullable</td><td>Linked administrative Kebele of residence.</td></tr></table>
+<table><tr><td>Column Name</td><td>Data Type</td><td>Constraints</td><td>Description</td></tr></table>
+<table><tr><td>id</td><td>BIGINT</td><td>Primary Key, Auto Increment</td><td>Unique prediction record index.</td></tr></table>
+<table><tr><td>user_id</td><td>UUID</td><td>Foreign Key -> accounts_user.id, CASCADE</td><td>Farmer executing the diagnostic scan.</td></tr></table>
+<table><tr><td>image</td><td>VARCHAR(255)</td><td>Not Null, File Path</td><td>Relative path to stored crop leaf photo.</td></tr></table>
+<table><tr><td>crop</td><td>VARCHAR(100)</td><td>Not Null, Indexed</td><td>Botanical crop species (e.g. Tomato, Maize).</td></tr></table>
+<table><tr><td>disease_class</td><td>VARCHAR(100)</td><td>Not Null</td><td>Machine learning classification label class.</td></tr></table>
+<table><tr><td>display_name</td><td>VARCHAR(150)</td><td>Not Null</td><td>Clean human-readable disease name.</td></tr></table>
+<table><tr><td>confidence</td><td>DOUBLE PRECISION</td><td>Range [0.00, 100.00]</td><td>Model inference confidence percentage.</td></tr></table>
+<table><tr><td>is_healthy</td><td>BOOLEAN</td><td>Default False</td><td>True if crop exhibits no disease symptoms.</td></tr></table>
+<table><tr><td>solution_detail</td><td>JSONB</td><td>Structured JSON Object</td><td>Diagnostic symptoms, biological, and chemical treatments.</td></tr></table>
+<table><tr><td>created_at</td><td>TIMESTAMPTZ</td><td>Auto-now-add</td><td>Server timestamp when scan was executed.</td></tr></table>
+<table><tr><td>Column Name</td><td>Data Type</td><td>Constraints</td><td>Description</td></tr></table>
+<table><tr><td>id</td><td>BIGINT</td><td>Primary Key, Auto Increment</td><td>Unique consultation ticket identifier.</td></tr></table>
+<table><tr><td>farmer_id</td><td>UUID</td><td>Foreign Key -> accounts_user.id, PROTECT</td><td>Farmer initiating the consultation.</td></tr></table>
+<table><tr><td>assigned_officer_id</td><td>UUID</td><td>Foreign Key -> accounts_user.id, SET_NULL</td><td>Assigned Kebele extension specialist.</td></tr></table>
+<table><tr><td>crop_type_id</td><td>INTEGER</td><td>Foreign Key -> consultations_croptype.id</td><td>Crop species categorized in ticket.</td></tr></table>
+<table><tr><td>kebele_id</td><td>INTEGER</td><td>Foreign Key -> locations_kebele.id, PROTECT</td><td>Immutable origin Kebele at ticket creation.</td></tr></table>
+<table><tr><td>title</td><td>VARCHAR(200)</td><td>Not Null</td><td>Subject summary of crop symptom.</td></tr></table>
+<table><tr><td>description</td><td>TEXT</td><td>Not Null</td><td>Detailed field observations submitted by farmer.</td></tr></table>
+<table><tr><td>status</td><td>VARCHAR(25)</td><td>Enum (NEW, ASSIGNED, RESOLVED, CLOSED)</td><td>Current case workflow status.</td></tr></table>
+<table><tr><td>created_at</td><td>TIMESTAMPTZ</td><td>Auto-now-add</td><td>Timestamp of ticket submission.</td></tr></table>
+<table><tr><td>resolved_at</td><td>TIMESTAMPTZ</td><td>Nullable</td><td>Timestamp when officer issued prescription.</td></tr></table>
+<table><tr><td>Column Name</td><td>Data Type</td><td>Constraints</td><td>Description</td></tr></table>
+<table><tr><td>id</td><td>BIGINT</td><td>Primary Key, Auto Increment</td><td>Unique message index.</td></tr></table>
+<table><tr><td>conversation_id</td><td>BIGINT</td><td>Foreign Key -> chat_conversation.id, CASCADE</td><td>Owning 1-on-1 conversation thread.</td></tr></table>
+<table><tr><td>sender_id</td><td>UUID</td><td>Foreign Key -> accounts_user.id, CASCADE</td><td>User authoring the message.</td></tr></table>
+<table><tr><td>message_type</td><td>VARCHAR(10)</td><td>Enum (TEXT, IMAGE, VIDEO, VOICE, FILE)</td><td>Payload media classification.</td></tr></table>
+<table><tr><td>text_content</td><td>TEXT</td><td>Blank=True</td><td>Textual message body.</td></tr></table>
+<table><tr><td>media_file</td><td>VARCHAR(255)</td><td>Blank=True, File Path</td><td>Relative path to audio voice note or image.</td></tr></table>
+<table><tr><td>is_read</td><td>BOOLEAN</td><td>Default False</td><td>Read receipt status indicator.</td></tr></table>
+<table><tr><td>created_at</td><td>TIMESTAMPTZ</td><td>Auto-now-add</td><td>Message dispatch timestamp.</td></tr></table>
+<table><tr><td>Resource / Operation</td><td>Farmer Role</td><td>Agriculture Officer</td><td>Lead Officer</td><td>System Administrator</td></tr></table>
+<table><tr><td>Capture & Run AI Prediction</td><td>Allow</td><td>Deny (Redirect)</td><td>Deny (Redirect)</td><td>Deny (Redirect)</td></tr></table>
+<table><tr><td>Create Consultation Ticket</td><td>Allow (Own Kebele)</td><td>Deny</td><td>Deny</td><td>Deny</td></tr></table>
+<table><tr><td>View Assigned Consultations</td><td>Deny</td><td>Allow (Assigned Kebele)</td><td>Allow (Woreda Scope)</td><td>Allow (All System)</td></tr></table>
+<table><tr><td>Issue Official Prescription</td><td>Deny</td><td>Allow (Assigned Cases)</td><td>Allow</td><td>Deny</td></tr></table>
+<table><tr><td>Reassign Officer on Ticket</td><td>Deny</td><td>Deny</td><td>Allow (Woreda Scope)</td><td>Allow (Global Scope)</td></tr></table>
+<table><tr><td>Publish Farming Guide</td><td>Deny</td><td>Allow</td><td>Allow</td><td>Allow</td></tr></table>
+<table><tr><td>CRUD Geographic Locations</td><td>Deny</td><td>Deny</td><td>Deny</td><td>Allow</td></tr></table>
+<table><tr><td>Verify Officer Accounts</td><td>Deny</td><td>Deny</td><td>Deny</td><td>Allow</td></tr></table>
+<table><tr><td>View Outbreak GIS Heatmap</td><td>Deny</td><td>Allow (Woreda Scope)</td><td>Allow (Woreda Scope)</td><td>Allow (National Scope)</td></tr></table>
+<table><tr><td>Test ID</td><td>Test Case Description</td><td>Input / Preconditions</td><td>Expected Result</td><td>Actual Result</td><td>Status</td></tr></table>
+<table><tr><td>TC-01</td><td>Farmer Registration</td><td>Valid phone, email, Kebele ID</td><td>User created, role=FARMER, status=ACTIVE</td><td>User registered successfully</td><td>PASS</td></tr></table>
+<table><tr><td>TC-02</td><td>Officer Mobile Lockdown</td><td>Officer credentials on Mobile</td><td>Login rejected with redirect warning</td><td>Rejected: 'Use Web Portal'</td><td>PASS</td></tr></table>
+<table><tr><td>TC-03</td><td>AI Disease Classification</td><td>Tomato Early Blight leaf photo</td><td>Disease identified with confidence >= 85%</td><td>'Tomato Early Blight' (91.4%)</td><td>PASS</td></tr></table>
+<table><tr><td>TC-04</td><td>Invalid Image Rejection</td><td>Photograph of automobile</td><td>HTTP 422: Unclear / Non-Plant Alert</td><td>Alert displayed, no DB row</td><td>PASS</td></tr></table>
+<table><tr><td>TC-05</td><td>Automated Kebele Routing</td><td>Farmer in Kebele 02 submits case</td><td>Ticket assigned to Kebele 02 officer</td><td>Assigned to Officer Chala</td><td>PASS</td></tr></table>
+<table><tr><td>TC-06</td><td>Lead Officer Triage</td><td>Lead Officer delegates ticket</td><td>Assigned officer updated, log created</td><td>Ticket delegated successfully</td><td>PASS</td></tr></table>
+<table><tr><td>TC-07</td><td>Chat Chronological Order</td><td>Send 3 sequential messages</td><td>Oldest message top, newest bottom</td><td>Messages ordered chronologically</td><td>PASS</td></tr></table>
+<table><tr><td>TC-08</td><td>Offline Guide Caching</td><td>Device in Airplane Mode</td><td>Guides load smoothly from local cache</td><td>Guides rendered from cache</td><td>PASS</td></tr></table>
+<table><tr><td>TC-09</td><td>Unconditional Back Navigation</td><td>Click drawer item then Back</td><td>Returns to Home dashboard</td><td>Returned to Home immediately</td><td>PASS</td></tr></table>
+<table><tr><td>TC-10</td><td>Password Hash Security</td><td>Inspect database user table</td><td>Password stored as bcrypt hash string</td><td>Hashed string verified</td><td>PASS</td></tr></table>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT FARMER MOBILE APPLICATION - LOGIN AND KEBELE REGISTRATION HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT FARMER MOBILE APPLICATION - HOME DASHBOARD & WEATHER ADVISORY HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT FARMER MOBILE APPLICATION - CAMERA SCANNER VIEWFINDER HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT FARMER MOBILE APPLICATION - AI STREAMING DIAGNOSIS RESULT HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT FARMER MOBILE APPLICATION - CONSULTATION TICKET & DIGITAL PRESCRIPTION HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT FARMER MOBILE APPLICATION - REAL-TIME CHAT & VOICE NOTE THREAD HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT FARMER MOBILE APPLICATION - OFFLINE AGRICULTURAL GUIDE LIBRARY HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT OFFICER WEB PORTAL - CONSULTATION TRIAGE WORKBENCH HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT OFFICER WEB PORTAL - CLINICAL IMAGE INSPECTION AND PRESCRIPTION EDITOR HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT ADMINISTRATOR WEB PORTAL - GEOGRAPHIC LOCATION HIERARCHY MANAGEMENT HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT ADMINISTRATOR WEB PORTAL - OFFICER KEBELE ASSIGNMENT DASHBOARD HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT ADMINISTRATOR WEB PORTAL - EPIDEMIOLOGICAL OUTBREAK HEATMAP HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT DATABASE TABLE SNAPSHOT - ACCOUNTS_USER TABLE HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT DATABASE TABLE SNAPSHOT - LOCATIONS_KEBELE AND HIERARCHY TABLES HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT DATABASE TABLE SNAPSHOT - PREDICTIONS_PREDICTIONHISTORY TABLE HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT DATABASE TABLE SNAPSHOT - CONSULTATIONS_CONSULTATION TABLE HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+<div class="placeholder-box">[ PLACEHOLDER: INSERT DATABASE TABLE SNAPSHOT - CHAT_CONVERSATION AND CHAT_MESSAGE TABLES HERE ] Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI (Paste or Insert Screenshot Image inside this container)<small>Recommended Size: Width 5.5 to 6.0 inches | Resolution: 300 DPI</small></div>
+</body></html>

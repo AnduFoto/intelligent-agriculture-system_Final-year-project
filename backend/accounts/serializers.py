@@ -370,6 +370,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # All checks passed — safe to proceed with normal token issuance.
         data = super().validate(attrs)
 
+        is_edu_mgr = False
+        try:
+            from education.models import WoredaEducationalManagerAssignment, KebeleEducationalManagerAssignment
+            is_edu_mgr = (
+                WoredaEducationalManagerAssignment.objects.filter(officer=user).exists() or
+                KebeleEducationalManagerAssignment.objects.filter(officer=user).exists()
+            )
+        except Exception:
+            pass
+
         data['user'] = {
             'id': user.id,
             'email': user.email,
@@ -379,6 +389,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'role': user.role,
             'status': user.status,
             'language_preference': user.language_preference,
+            'is_educational_manager': is_edu_mgr,
         }
 
         return data
@@ -397,132 +408,130 @@ class ProfileSerializer(serializers.ModelSerializer):
     special_woreda_name = serializers.CharField(
         source='special_woreda.name', read_only=True, default=None
     )
+    kebele_name = serializers.CharField(source='kebele.name', read_only=True, default=None)
     full_name = serializers.CharField(source='get_full_name', read_only=True)
+    
+    assignments = serializers.SerializerMethodField()
+    professional_information = serializers.SerializerMethodField()
+    management_information = serializers.SerializerMethodField()
+    is_educational_manager = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
             'id', 'email', 'first_name', 'middle_name', 'last_name', 'full_name',
-            'phone_number', 'role', 'status', 'language_preference',
+            'phone_number', 'role', 'status', 'language_preference', 'profile_image',
             'region', 'region_name',
             'zone', 'zone_name',
             'woreda', 'woreda_name',
             'special_woreda', 'special_woreda_name',
+            'kebele', 'kebele_name',
             'date_joined',
+            'assignments', 'professional_information', 'management_information',
+            'is_educational_manager'
         ]
-        read_only_fields = [
-            'id', 'email', 'role', 'status', 'date_joined',
-        ]
+        read_only_fields = fields
+
+    def get_is_educational_manager(self, obj):
+        try:
+            from education.models import WoredaEducationalManagerAssignment, KebeleEducationalManagerAssignment
+            return (
+                WoredaEducationalManagerAssignment.objects.filter(officer=obj).exists() or
+                KebeleEducationalManagerAssignment.objects.filter(officer=obj).exists()
+            )
+        except Exception:
+            return False
+
+    def get_assignments(self, obj):
+        if obj.role != RoleChoices.OFFICER:
+            return []
+        assignments = []
+        for assign in obj.kebele_assignments.select_related('kebele', 'kebele__woreda', 'kebele__special_woreda', 'kebele__woreda__zone', 'kebele__special_woreda__region', 'kebele__woreda__zone__region').all():
+            k = assign.kebele
+            loc = {
+                'kebele': {'id': k.id, 'name': k.name},
+            }
+            if k.woreda:
+                loc['woreda'] = {'id': k.woreda.id, 'name': k.woreda.name}
+                loc['zone'] = {'id': k.woreda.zone.id, 'name': k.woreda.zone.name}
+                loc['region'] = {'id': k.woreda.zone.region.id, 'name': k.woreda.zone.region.name}
+            elif k.special_woreda:
+                loc['special_woreda'] = {'id': k.special_woreda.id, 'name': k.special_woreda.name}
+                loc['region'] = {'id': k.special_woreda.region.id, 'name': k.special_woreda.region.name}
+            assignments.append(loc)
+        return assignments
+
+    def get_professional_information(self, obj):
+        if obj.role != RoleChoices.OFFICER:
+            return None
+        try:
+            from consultations.models import OfficerSpecialization
+            specs = OfficerSpecialization.objects.filter(officer=obj).select_related('specialization')
+            return [
+                {
+                    'id': spec.specialization.id,
+                    'name': spec.specialization.name,
+                    'description': spec.specialization.description
+                }
+                for spec in specs
+            ]
+        except ImportError:
+            return []
+
+    def get_management_information(self, obj):
+        info = {}
+        try:
+            lead_manager = getattr(obj, 'lead_officer_assignment', None)
+            lead = lead_manager.first() if lead_manager else None
+            if lead:
+                info['lead_officer'] = {
+                    'kebele': lead.kebele.name,
+                    'woreda': lead.kebele.woreda.name if lead.kebele.woreda else None,
+                    'zone': lead.kebele.woreda.zone.name if lead.kebele.woreda else None,
+                    'special_woreda': lead.kebele.special_woreda.name if lead.kebele.special_woreda else None,
+                    'region': lead.kebele.woreda.zone.region.name if lead.kebele.woreda else lead.kebele.special_woreda.region.name if lead.kebele.special_woreda else None,
+                    'assigned_at': lead.assigned_at
+                }
+        except Exception:
+            pass
+            
+        try:
+            from education.models import WoredaEducationalManagerAssignment, KebeleEducationalManagerAssignment
+            woreda_ed = WoredaEducationalManagerAssignment.objects.filter(officer=obj).select_related('woreda', 'special_woreda').first()
+            if woreda_ed:
+                info['woreda_education_manager'] = {
+                    'woreda': woreda_ed.woreda.name if woreda_ed.woreda else None,
+                    'special_woreda': woreda_ed.special_woreda.name if woreda_ed.special_woreda else None,
+                }
+                
+            kebele_ed = KebeleEducationalManagerAssignment.objects.filter(officer=obj).select_related('kebele', 'kebele__woreda').first()
+            if kebele_ed:
+                info['kebele_education_manager'] = {
+                    'kebele': kebele_ed.kebele.name,
+                    'woreda': kebele_ed.kebele.woreda.name if kebele_ed.kebele.woreda else None,
+                }
+        except ImportError:
+            pass
+            
+        return info if info else None
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """
     Handles self-service profile updates. Deliberately excludes:
-    - email       (identity-critical; changing it would need a
-                    re-verification flow we haven't built — out of
-                    scope for now, flagged below)
-    - role        (administratively controlled only)
-    - status      (administratively controlled only)
-    - password    (handled by a separate Change Password serializer, Step 22)
-
-    Location CAN be updated here (e.g., a farmer relocates), and is
-    validated with the same XOR rule as registration.
+    - email
+    - role
+    - status
+    - password
+    - all location fields (region, zone, woreda, special_woreda, kebele)
+    Location changes remain the responsibility of the appropriate administrative functionality.
     """
-
-    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
-    zone = serializers.PrimaryKeyRelatedField(
-        queryset=Zone.objects.all(), required=False, allow_null=True
-    )
-    woreda = serializers.PrimaryKeyRelatedField(
-        queryset=Woreda.objects.all(), required=False, allow_null=True
-    )
-    special_woreda = serializers.PrimaryKeyRelatedField(
-        queryset=SpecialWoreda.objects.all(), required=False, allow_null=True
-    )
-    kebele = serializers.PrimaryKeyRelatedField(
-        queryset=Kebele.objects.all(), required=False, allow_null=True
-    )
-
     class Meta:
         model = User
         fields = [
             'first_name', 'middle_name', 'last_name', 'phone_number',
-            'language_preference',
-            'region', 'zone', 'woreda', 'special_woreda', 'kebele',
+            'language_preference', 'profile_image'
         ]
-    def validate(self, attrs):
-        instance = self.instance
-
-        # Officers have no location chain at all — skip this entire
-        # validation block for them, exactly mirroring the bypass in
-        # User.clean() itself (Step 2).
-        if instance.role == RoleChoices.OFFICER:
-            return attrs
-
-        region = attrs.get('region', instance.region)
-        zone = attrs.get('zone', instance.zone) if 'zone' in attrs or instance.zone else attrs.get('zone', None)
-        woreda = attrs.get('woreda', instance.woreda) if 'woreda' in attrs or instance.woreda else attrs.get('woreda', None)
-        special_woreda = (
-            attrs.get('special_woreda', instance.special_woreda)
-            if 'special_woreda' in attrs or instance.special_woreda
-            else attrs.get('special_woreda', None)
-        )
-        kebele = (
-            attrs.get('kebele', instance.kebele)
-            if 'kebele' in attrs or instance.kebele
-            else attrs.get('kebele', None)
-        )
-
-        has_zone = zone is not None
-        has_woreda = woreda is not None
-        has_special = special_woreda is not None
-
-        if has_zone != has_woreda:
-            raise serializers.ValidationError(
-                {'woreda': "Both Zone and Woreda must be provided together."}
-            )
-
-        if (has_zone and has_woreda) and has_special:
-            raise serializers.ValidationError(
-                {'special_woreda': "Select either a Zone with Woreda, or a Special Woreda — not both."}
-            )
-
-        if not (has_zone and has_woreda) and not has_special:
-            raise serializers.ValidationError(
-                {'non_field_errors': ["You must select either a Zone with Woreda, or a Special Woreda."]}
-            )
-
-        if has_zone and zone.region_id != region.id:
-            raise serializers.ValidationError(
-                {'zone': "The selected Zone does not belong to the selected Region."}
-            )
-
-        if has_special and special_woreda.region_id != region.id:
-            raise serializers.ValidationError(
-                {'special_woreda': "The selected Special Woreda does not belong to the selected Region."}
-            )
-
-        if has_woreda and woreda.zone_id != zone.id:
-            raise serializers.ValidationError(
-                {'woreda': "The selected Woreda does not belong to the selected Zone."}
-            )
-
-        if not kebele:
-            raise serializers.ValidationError(
-                {'kebele': "Kebele is required."}
-            )
-
-        if has_woreda and kebele.woreda_id != woreda.id:
-            raise serializers.ValidationError(
-                {'kebele': "The selected Kebele does not belong to the selected Woreda."}
-            )
-
-        if has_special and kebele.special_woreda_id != special_woreda.id:
-            raise serializers.ValidationError(
-                {'kebele': "The selected Kebele does not belong to the selected Special Woreda."}
-            )
-
-        return attrs
     
 
 
@@ -744,3 +753,38 @@ class KebeleOfficerAssignmentSerializer(serializers.Serializer):
 
     def get_assigned_by_email(self, obj):
         return obj.assigned_by.email if obj.assigned_by else None
+
+from accounts.models import LeadOfficerAssignment
+
+class LeadOfficerAssignSerializer(serializers.Serializer):
+    officer_id = serializers.IntegerField()
+
+    def validate_officer_id(self, value):
+        from accounts.models import User, RoleChoices
+        try:
+            officer = User.objects.get(pk=value, role=RoleChoices.OFFICER)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Valid Officer account not found.")
+            
+        kebele = self.context.get('kebele')
+        if kebele:
+            if not officer.kebele_assignments.filter(kebele=kebele).exists():
+                raise serializers.ValidationError("Officer must be assigned to this Kebele before becoming its Lead Officer.")
+
+            existing_lead = LeadOfficerAssignment.objects.filter(officer=officer).exclude(kebele=kebele).select_related('kebele').first()
+            if existing_lead:
+                raise serializers.ValidationError(
+                    f"Officer {officer.get_full_name()} is already designated as Lead Officer for {existing_lead.kebele.name}. "
+                    f"An officer can only be designated as Lead Officer for one Kebele at a time."
+                )
+        return value
+
+class LeadOfficerAssignmentSerializer(serializers.ModelSerializer):
+    officer_full_name = serializers.CharField(source='officer.get_full_name', read_only=True)
+    officer_email = serializers.CharField(source='officer.email', read_only=True)
+    assigned_by_email = serializers.CharField(source='assigned_by.email', read_only=True)
+    
+    class Meta:
+        model = LeadOfficerAssignment
+        fields = ['id', 'kebele', 'officer', 'officer_full_name', 'officer_email', 'assigned_by_email', 'assigned_at']
+        read_only_fields = fields

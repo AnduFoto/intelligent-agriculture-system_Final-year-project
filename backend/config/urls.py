@@ -8,4 +8,11 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
     path('api/locations/', include('locations.urls')),
     path('api/predictions/', include('predictions.urls')),
+    path('api/consultations/', include('consultations.urls')),
+    path('api/education/', include('education.urls')),
+    path('api/notifications/', include('notifications.urls')),
+    path('api/reports/', include('reports.urls')),
+    path('api/administration/', include('administration.urls')),
+    path('api/chat/', include('chat.urls')),
+    path('api/community/', include('community.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

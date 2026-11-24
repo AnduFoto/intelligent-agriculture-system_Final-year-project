@@ -6,7 +6,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from accounts.models import User, EmailVerificationToken, PasswordResetToken
 from accounts.models import User, EmailVerificationToken, PasswordResetToken, OfficerKebeleAssignment
-
+from .models import LeadOfficerAssignment
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     model = User
@@ -61,3 +61,10 @@ class OfficerKebeleAssignmentAdmin(admin.ModelAdmin):
     list_filter = ('assigned_at',)
     search_fields = ('officer__email', 'kebele__name')
     readonly_fields = ('assigned_at',)
+
+
+@admin.register(LeadOfficerAssignment)
+class LeadOfficerAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('officer', 'kebele', 'assigned_at', 'assigned_by')
+    list_filter = ('kebele',)
+    search_fields = ('officer__email', 'kebele__name')

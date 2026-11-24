@@ -71,12 +71,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=LanguageChoices.choices,
         default=LanguageChoices.ENGLISH
     )
+    
+    profile_image = models.ImageField(
+        upload_to='profiles/',
+        null=True,
+        blank=True
+    )
 
     # ---------- Location (Zone+Woreda OR SpecialWoreda) ----------
     region = models.ForeignKey(
         'locations.Region',
         on_delete=models.PROTECT,
-        related_name='users'
+        related_name='users',
+        null=True,
+        blank=True
     )
     zone = models.ForeignKey(
         'locations.Zone',
@@ -155,16 +163,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         Enforce the location business rule:
         exactly (zone + woreda) OR (special_woreda) — never both, never neither.
 
-        This full location chain (including kebele) applies ONLY to
-        FARMER and ADMINISTRATOR roles. OFFICER accounts have no
-        location chain at all — their geographic relevance comes
-        entirely through the separate assigned_kebeles M2M field
-        instead, so this validation is skipped entirely for them.
+        This full location chain (including kebele) applies to all roles,
+        but OFFICER accounts are not required to provide a kebele.
         """
         super().clean()
 
-        if self.role == RoleChoices.OFFICER:
-            return
+        if not self.region_id:
+            raise ValidationError("Region is required.")
 
         has_zone_path = bool(self.zone) and bool(self.woreda)
         has_partial_zone_path = bool(self.zone) != bool(self.woreda)
@@ -201,22 +206,21 @@ class User(AbstractBaseUser, PermissionsMixin):
                 "The selected Special Woreda does not belong to the selected Region."
             )
 
-        # Kebele check: required, and must belong to whichever Woreda
-        # or Special Woreda was actually selected.
-        if not self.kebele:
-            raise ValidationError(
-                "Kebele is required."
-            )
+        # Kebele check: required for FARMER and ADMINISTRATOR, optional for OFFICER.
+        if self.role != RoleChoices.OFFICER:
+            if not self.kebele:
+                raise ValidationError("Kebele is required.")
 
-        if self.woreda and self.kebele.woreda_id != self.woreda_id:
-            raise ValidationError(
-                "The selected Kebele does not belong to the selected Woreda."
-            )
+        if self.kebele:
+            if self.woreda and self.kebele.woreda_id != self.woreda_id:
+                raise ValidationError(
+                    "The selected Kebele does not belong to the selected Woreda."
+                )
 
-        if self.special_woreda and self.kebele.special_woreda_id != self.special_woreda_id:
-            raise ValidationError(
-                "The selected Kebele does not belong to the selected Special Woreda."
-            )
+            if self.special_woreda and self.kebele.special_woreda_id != self.special_woreda_id:
+                raise ValidationError(
+                    "The selected Kebele does not belong to the selected Special Woreda."
+                )
         
 
 
@@ -338,3 +342,37 @@ class OfficerKebeleAssignment(models.Model):
 
     def __str__(self):
         return f"{self.officer.email} -> {self.kebele.name}"
+
+
+class LeadOfficerAssignment(models.Model):
+    """
+    Designates a single Officer as the Lead Officer for a single Kebele.
+    Business rule: one Kebele -> one Lead Officer, one Lead Officer -> one Kebele.
+    The designated user must already hold role=OFFICER and must already have
+    an existing OfficerKebeleAssignment to the same Kebele (enforced at the
+    serializer level, mirroring the defense-in-depth pattern used elsewhere
+    in this project).
+    """
+    officer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='lead_officer_assignment',
+    )
+    kebele = models.OneToOneField(
+    'locations.Kebele',
+    on_delete=models.CASCADE,
+    related_name='lead_officer_assignment',
+)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='+',
+    )
+
+    class Meta:
+        ordering = ['-assigned_at']
+
+    def __str__(self):
+        return f"{self.officer.email} — Lead Officer for {self.kebele.name}"

@@ -1,3 +1,5 @@
+from administration.services import AuditService
+from administration.models import ActionTypeChoices
 from django.shortcuts import render
 
 # Create your views here.
@@ -18,6 +20,7 @@ from locations.serializers import (
     RegionFullTreeSerializer,
 )
 from accounts.permissions import IsAdministrator
+from education.services import create_woreda_publisher_profile, create_kebele_publisher_profile, create_special_woreda_publisher_profile
 
 
 class IsAdministratorOrReadOnly(IsAdministrator):
@@ -42,6 +45,19 @@ class RegionListCreateView(generics.ListCreateAPIView):
     serializer_class = RegionSerializer
     permission_classes = [IsAdministratorOrReadOnly]
 
+    def perform_create(self, serializer):
+        region = serializer.save()
+        AuditService.log(
+            action=ActionTypeChoices.LOCATION_CREATED,
+            description=f"Created Region '{region.name}'",
+            actor=self.request.user,
+            target_type='Region',
+            target_id=region.id,
+            target_repr=region.name,
+            request=self.request,
+            region=region
+        )
+
 
 class RegionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Region.objects.all()
@@ -55,6 +71,20 @@ class ZoneListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdministratorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['region']
+
+    def perform_create(self, serializer):
+        zone = serializer.save()
+        AuditService.log(
+            action=ActionTypeChoices.LOCATION_CREATED,
+            description=f"Created Zone '{zone.name}' in Region '{zone.region.name}'",
+            actor=self.request.user,
+            target_type='Zone',
+            target_id=zone.id,
+            target_repr=zone.name,
+            request=self.request,
+            zone=zone,
+            region=zone.region
+        )
 
 
 class ZoneDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -70,6 +100,21 @@ class SpecialWoredaListCreateView(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['region']
 
+    def perform_create(self, serializer):
+        special_woreda = serializer.save()
+        create_special_woreda_publisher_profile(special_woreda)
+        AuditService.log(
+            action=ActionTypeChoices.LOCATION_CREATED,
+            description=f"Created Special Woreda '{special_woreda.name}' in Region '{special_woreda.region.name}'",
+            actor=self.request.user,
+            target_type='SpecialWoreda',
+            target_id=special_woreda.id,
+            target_repr=special_woreda.name,
+            request=self.request,
+            special_woreda=special_woreda,
+            region=special_woreda.region
+        )
+
 
 class SpecialWoredaDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SpecialWoreda.objects.select_related('region').all()
@@ -83,6 +128,22 @@ class WoredaListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdministratorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['zone']
+
+    def perform_create(self, serializer):
+        woreda = serializer.save()
+        create_woreda_publisher_profile(woreda)
+        AuditService.log(
+            action=ActionTypeChoices.LOCATION_CREATED,
+            description=f"Created Woreda '{woreda.name}' in Zone '{woreda.zone.name}'",
+            actor=self.request.user,
+            target_type='Woreda',
+            target_id=woreda.id,
+            target_repr=woreda.name,
+            request=self.request,
+            woreda=woreda,
+            zone=woreda.zone,
+            region=woreda.zone.region if woreda.zone else None
+        )
 
 
 class WoredaDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -99,6 +160,21 @@ class KebeleListCreateView(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['woreda', 'special_woreda']
     search_fields = ['name']
+
+    def perform_create(self, serializer):
+        kebele = serializer.save()
+        create_kebele_publisher_profile(kebele)
+        parent_str = f"Special Woreda '{kebele.special_woreda.name}'" if kebele.special_woreda else f"Woreda '{kebele.woreda.name}'"
+        AuditService.log(
+            action=ActionTypeChoices.LOCATION_CREATED,
+            description=f"Created Kebele '{kebele.name}' under {parent_str}",
+            actor=self.request.user,
+            target_type='Kebele',
+            target_id=kebele.id,
+            target_repr=kebele.name,
+            request=self.request,
+            kebele=kebele
+        )
 
 
 class KebeleDetailView(generics.RetrieveUpdateDestroyAPIView):

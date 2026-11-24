@@ -121,7 +121,7 @@ function Navbar() {
   };
 
   return (
-    <header className="w-full font-sans shadow-sm">
+    <header className="w-full  font-sans shadow-sm">
       {/* TOP UTILITY BAR (Dark Charcoal Header) */}
       <div className="bg-zinc-900 text-zinc-300 text-xs py-2 px-4 sm:px-8 border-b border-zinc-800">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -169,7 +169,7 @@ function Navbar() {
       </div>
 
       {/* MAIN NAVIGATION BAR */}
-      <nav className="bg-white py-3.5 px-4 sm:px-8 border-b border-gray-100">
+      <nav className="bg-white/90 backdrop-blur-md py-3.5 px-4 sm:px-8 border-b border-gray-100 sticky top-0 z-30 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* BRAND LOGO SECTION */}

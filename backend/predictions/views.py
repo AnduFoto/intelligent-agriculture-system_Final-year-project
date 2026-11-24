@@ -95,6 +95,36 @@ class PredictDiseaseView(APIView):
             top_predictions=ai_response.get('top_predictions', []),
         )
 
+        from notifications.services import NotificationService
+        from notifications.models import NotificationCategoryChoices, NotificationTypeChoices, NotificationRelatedObjectChoices
+
+        # Notify Farmer
+        NotificationService.notify_user(
+            recipient=request.user,
+            title="Disease Prediction Complete",
+            message=f"Analysis of {record.crop} completed: {record.display_name}",
+            category=NotificationCategoryChoices.AI_PREDICTION,
+            notification_type=NotificationTypeChoices.WARNING if not record.is_healthy else NotificationTypeChoices.SUCCESS,
+            action_url=f"/farmer/predictions/{record.id}",
+            related_object_type=NotificationRelatedObjectChoices.PREDICTION,
+            related_object_id=str(record.id)
+        )
+
+        # Notify Lead Officer if disease detected
+        if not record.is_healthy and request.user.kebele_id:
+            from accounts.models import LeadOfficerAssignment
+            lead_assignment = LeadOfficerAssignment.objects.filter(kebele_id=request.user.kebele_id).first()
+            if lead_assignment:
+                NotificationService.notify_user(
+                    recipient=lead_assignment.officer,
+                    title=f"Disease Detected: {record.crop}",
+                    message=f"A farmer in your Kebele detected {record.display_name}.",
+                    category=NotificationCategoryChoices.AI_PREDICTION,
+                    notification_type=NotificationTypeChoices.WARNING,
+                    related_object_type=NotificationRelatedObjectChoices.PREDICTION,
+                    related_object_id=str(record.id)
+                )
+
         serializer = PredictionHistorySerializer(record, context={'request': request})
         response_data = dict(serializer.data)
         response_data['is_valid_crop_image'] = True

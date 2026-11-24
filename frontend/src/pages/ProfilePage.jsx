@@ -1,358 +1,218 @@
-import { useState, useEffect } from 'react';
-import { authService } from '../api/authService';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { message, Modal, Form, Input, Select, Button } from 'antd';
 import { useAuth } from '../context/AuthContext';
-import { useLocationTree } from '../hooks/useLocationTree';
+import { getMyProfile, updateMyProfile } from '../api/profileService';
+import ProfileHeader from '../components/profile/ProfileHeader';
+import PersonalInformationCard from '../components/profile/PersonalInformationCard';
+import LocationInformationCard from '../components/profile/LocationInformationCard';
+import RoleInformationCard from '../components/profile/RoleInformationCard';
+import ProfessionalInformationCard from '../components/profile/ProfessionalInformationCard';
+import AssignmentInformationCard from '../components/profile/AssignmentInformationCard';
+import ManagementInformationCard from '../components/profile/ManagementInformationCard';
+import SecurityCard from '../components/profile/SecurityCard';
+import ProfileSkeleton from '../components/profile/ProfileSkeleton';
+import ProfileImageUpload from '../components/profile/ProfileImageUpload';
 
-const ADMIN_TYPE_ZONE = 'ZONE';
-const ADMIN_TYPE_SPECIAL_WOREDA = 'SPECIAL_WOREDA';
+export default function ProfilePage() {
+    const { t } = useTranslation();
+    const { refreshUser } = useAuth();
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [updating, setUpdating] = useState(false);
+    const [form] = Form.useForm();
+    const [selectedImage, setSelectedImage] = useState(null);
 
-function ProfilePage() {
-  const { refreshUser } = useAuth();
-  const {
-    regions,
-    isLoading: locationsLoading,
-    getZonesForRegion,
-    getSpecialWoredasForRegion,
-    getWoredasForZone,
-    getKebelesForWoreda,
-    getKebelesForSpecialWoreda,
-  } = useLocationTree();
-
-  const [profile, setProfile] = useState(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-
-  const [formData, setFormData] = useState(null);
-  const [adminType, setAdminType] = useState(ADMIN_TYPE_ZONE);
-  const [errors, setErrors] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState('');
-
-  const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_new_password: '' });
-  const [pwErrors, setPwErrors] = useState(null);
-  const [pwSaving, setPwSaving] = useState(false);
-  const [pwMessage, setPwMessage] = useState('');
-
-  useEffect(() => {
-    authService
-      .getProfile()
-      .then((response) => {
-        const data = response.data;
-        setProfile(data);
-        setFormData({
-          first_name: data.first_name,
-          middle_name: data.middle_name || '',
-          last_name: data.last_name,
-          phone_number: data.phone_number,
-          language_preference: data.language_preference,
-          region: data.region,
-          zone: data.zone || '',
-          woreda: data.woreda || '',
-          special_woreda: data.special_woreda || '',
-          kebele: data.kebele || '',
-        });
-        setAdminType(data.special_woreda ? ADMIN_TYPE_SPECIAL_WOREDA : ADMIN_TYPE_ZONE);
-      })
-      .finally(() => setIsLoadingProfile(false));
-  }, []);
-
-  if (isLoadingProfile || !formData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-sm text-gray-400">Loading profile...</p>
-      </div>
-    );
-  }
-
-  const zones = formData.region ? getZonesForRegion(formData.region) : [];
-  const specialWoredas = formData.region ? getSpecialWoredasForRegion(formData.region) : [];
-  const woredas = formData.region && formData.zone ? getWoredasForZone(formData.region, formData.zone) : [];
-
-  const kebeles =
-    adminType === ADMIN_TYPE_ZONE
-      ? (formData.region && formData.zone && formData.woreda
-          ? getKebelesForWoreda(formData.region, formData.zone, formData.woreda)
-          : [])
-      : (formData.region && formData.special_woreda
-          ? getKebelesForSpecialWoreda(formData.region, formData.special_woreda)
-          : []);
-
-  const handleFieldChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleRegionChange = (value) => {
-    setFormData((prev) => ({ ...prev, region: value, zone: '', woreda: '', special_woreda: '', kebele: '' }));
-  };
-
-  const handleAdminTypeChange = (type) => {
-    setAdminType(type);
-    if (type === ADMIN_TYPE_ZONE) {
-      setFormData((prev) => ({ ...prev, special_woreda: '', kebele: '' }));
-    } else {
-      setFormData((prev) => ({ ...prev, zone: '', woreda: '', kebele: '' }));
-    }
-  };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setErrors(null);
-    setSaveMessage('');
-    setIsSaving(true);
-
-    const payload = {
-      first_name: formData.first_name,
-      middle_name: formData.middle_name,
-      last_name: formData.last_name,
-      phone_number: formData.phone_number,
-      language_preference: formData.language_preference,
-      region: formData.region,
-      zone: adminType === ADMIN_TYPE_ZONE ? formData.zone || null : null,
-      woreda: adminType === ADMIN_TYPE_ZONE ? formData.woreda || null : null,
-      special_woreda: adminType === ADMIN_TYPE_SPECIAL_WOREDA ? formData.special_woreda || null : null,
-      kebele: formData.kebele || null,
+    const loadProfile = async () => {
+        try {
+            const data = await getMyProfile();
+            setProfile(data);
+        } catch (error) {
+            message.error(t('failed_to_load_profile', 'Failed to load profile information.'));
+        } finally {
+            setLoading(false);
+        }
     };
 
-    try {
-      const response = await authService.updateProfile(payload);
-      setProfile(response.data);
-      setSaveMessage('Profile updated successfully.');
-      refreshUser();
-    } catch (err) {
-      setErrors(err.response?.data?.errors || { non_field_errors: [err.response?.data?.detail || 'Update failed.'] });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    useEffect(() => {
+        loadProfile();
+    }, []);
 
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    setPwErrors(null);
-    setPwMessage('');
-    setPwSaving(true);
+    const showEditModal = () => {
+        form.setFieldsValue({
+            first_name: profile.first_name,
+            middle_name: profile.middle_name,
+            last_name: profile.last_name,
+            phone_number: profile.phone_number,
+            language_preference: profile.language_preference,
+        });
+        setSelectedImage(profile.profile_image);
+        setIsEditModalVisible(true);
+    };
 
-    try {
-      await authService.changePassword(pwForm);
-      setPwMessage('Password changed successfully.');
-      setPwForm({ current_password: '', new_password: '', confirm_new_password: '' });
-    } catch (err) {
-      setPwErrors(err.response?.data?.errors || { non_field_errors: [err.response?.data?.detail || 'Change failed.'] });
-    } finally {
-      setPwSaving(false);
-    }
-  };
+    const handleEditCancel = () => {
+        setIsEditModalVisible(false);
+        form.resetFields();
+        setSelectedImage(null);
+    };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+    const handleEditSubmit = async (values) => {
+        setUpdating(true);
+        try {
+            const formData = new FormData();
+            formData.append('first_name', values.first_name);
+            formData.append('middle_name', values.middle_name || '');
+            formData.append('last_name', values.last_name);
+            formData.append('phone_number', values.phone_number);
+            formData.append('language_preference', values.language_preference);
+            
+            if (selectedImage instanceof File) {
+                formData.append('profile_image', selectedImage);
+            } else if (selectedImage === null && profile.profile_image) {
+                // If the user removed the existing image
+                formData.append('profile_image', '');
+            }
 
-        <div className="bg-white rounded-lg shadow p-8">
-          <h1 className="text-2xl font-semibold text-primary-700 mb-1">My Profile</h1>
-          <p className="text-sm text-gray-500 mb-6">{profile.email} · {profile.role}</p>
+            const updatedProfile = await updateMyProfile(formData);
+            setProfile(updatedProfile);
+            await refreshUser();
+            message.success(t('profile_updated_successfully', 'Profile updated successfully.'));
+            setIsEditModalVisible(false);
+        } catch (error) {
+            message.error(t('failed_to_update_profile', 'Failed to update profile.'));
+        } finally {
+            setUpdating(false);
+        }
+    };
 
-          {saveMessage && (
-            <div className="mb-4 p-3 bg-primary-50 text-primary-700 text-sm rounded">{saveMessage}</div>
-          )}
-          {errors?.non_field_errors && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded">{errors.non_field_errors.join(' ')}</div>
-          )}
-
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <TextField label="First Name" value={formData.first_name} onChange={(v) => handleFieldChange('first_name', v)} error={errors?.first_name?.[0]} />
-              <TextField label="Last Name" value={formData.last_name} onChange={(v) => handleFieldChange('last_name', v)} error={errors?.last_name?.[0]} />
+    if (loading) {
+        return (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <ProfileSkeleton />
             </div>
-            <TextField label="Middle Name" value={formData.middle_name} onChange={(v) => handleFieldChange('middle_name', v)} error={errors?.middle_name?.[0]} />
-            <TextField label="Phone Number" value={formData.phone_number} onChange={(v) => handleFieldChange('phone_number', v)} error={errors?.phone_number?.[0]} />
+        );
+    }
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Language Preference</label>
-              <select
-                value={formData.language_preference}
-                onChange={(e) => handleFieldChange('language_preference', e.target.value)}
-                className={inputClass}
-              >
-                <option value="EN">English</option>
-                <option value="AM">Amharic</option>
-              </select>
+    if (!profile) {
+        return (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-slate-500">
+                {t('profile_not_found', 'Profile not found.')}
             </div>
+        );
+    }
 
-            <hr />
-            <p className="text-sm font-medium text-gray-700">Location</p>
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in-up">
+            <ProfileHeader profile={profile} onEditClick={showEditModal} />
 
-            {locationsLoading ? (
-              <p className="text-sm text-gray-400">Loading location data...</p>
-            ) : (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
-                  <select
-                    value={formData.region}
-                    onChange={(e) => handleRegionChange(e.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="">Select a Region</option>
-                    {regions.map((r) => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                  {errors?.region && <p className="text-xs text-red-600 mt-1">{errors.region[0]}</p>}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-8">
+                    <PersonalInformationCard profile={profile} />
+                    <RoleInformationCard profile={profile} />
+                    {profile.role === 'OFFICER' && (
+                        <AssignmentInformationCard profile={profile} />
+                    )}
                 </div>
 
-                {formData.region && (
-                  <div className="flex gap-4 text-sm">
-                    <label className="flex items-center gap-1">
-                      <input type="radio" checked={adminType === ADMIN_TYPE_ZONE} onChange={() => handleAdminTypeChange(ADMIN_TYPE_ZONE)} />
-                      Zone / Woreda
-                    </label>
-                    <label className="flex items-center gap-1">
-                      <input type="radio" checked={adminType === ADMIN_TYPE_SPECIAL_WOREDA} onChange={() => handleAdminTypeChange(ADMIN_TYPE_SPECIAL_WOREDA)} />
-                      Special Woreda
-                    </label>
-                  </div>
-                )}
+                {/* Right Column */}
+                <div className="space-y-8">
+                    {profile.role !== 'OFFICER' && (
+                        <LocationInformationCard profile={profile} />
+                    )}
+                    {profile.role === 'OFFICER' && (
+                        <ProfessionalInformationCard profile={profile} />
+                    )}
+                    {(profile.management_information && Object.keys(profile.management_information).length > 0) && (
+                        <ManagementInformationCard profile={profile} />
+                    )}
+                    <SecurityCard />
+                </div>
+            </div>
 
-                {formData.region && adminType === ADMIN_TYPE_ZONE && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Zone</label>
-                      <select
-                        value={formData.zone}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, zone: e.target.value, woreda: '', kebele: '' }))}
-                        className={inputClass}
-                      >
-                        <option value="">Select a Zone</option>
-                        {zones.map((z) => (
-                          <option key={z.id} value={z.id}>{z.name}</option>
-                        ))}
-                      </select>
-                      {errors?.zone && <p className="text-xs text-red-600 mt-1">{errors.zone[0]}</p>}
+            {/* Edit Profile Modal */}
+            <Modal
+                title={<span className="text-lg font-bold text-slate-800 dark:text-white">{t('edit_profile', 'Edit Profile')}</span>}
+                open={isEditModalVisible}
+                onCancel={handleEditCancel}
+                footer={null}
+                destroyOnHidden
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleEditSubmit}
+                    requiredMark={false}
+                    className="mt-4"
+                >
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            {t('profile_image', 'Profile Image')}
+                        </label>
+                        <ProfileImageUpload value={selectedImage} onChange={setSelectedImage} />
                     </div>
 
-                    {formData.zone && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Woreda</label>
-                        <select
-                          value={formData.woreda}
-                          onChange={(e) => setFormData((prev) => ({ ...prev, woreda: e.target.value, kebele: '' }))}
-                          className={inputClass}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Form.Item
+                            name="first_name"
+                            label={<span className="text-slate-700 dark:text-slate-300 font-medium">{t('first_name', 'First Name')}</span>}
+                            rules={[{ required: true, message: t('first_name_required', 'First Name is required.') }]}
                         >
-                          <option value="">Select a Woreda</option>
-                          {woredas.map((w) => (
-                            <option key={w.id} value={w.id}>{w.name}</option>
-                          ))}
-                        </select>
-                        {errors?.woreda && <p className="text-xs text-red-600 mt-1">{errors.woreda[0]}</p>}
-                      </div>
-                    )}
-                  </>
-                )}
+                            <Input size="large" className="rounded-lg" />
+                        </Form.Item>
 
-                {formData.region && adminType === ADMIN_TYPE_SPECIAL_WOREDA && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Special Woreda</label>
-                    <select
-                      value={formData.special_woreda}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, special_woreda: e.target.value, kebele: '' }))}
-                      className={inputClass}
+                        <Form.Item
+                            name="middle_name"
+                            label={<span className="text-slate-700 dark:text-slate-300 font-medium">{t('middle_name', 'Middle Name')}</span>}
+                        >
+                            <Input size="large" className="rounded-lg" />
+                        </Form.Item>
+                    </div>
+
+                    <Form.Item
+                        name="last_name"
+                        label={<span className="text-slate-700 dark:text-slate-300 font-medium">{t('last_name', 'Last Name')}</span>}
+                        rules={[{ required: true, message: t('last_name_required', 'Last Name is required.') }]}
                     >
-                      <option value="">Select a Special Woreda</option>
-                      {specialWoredas.map((sw) => (
-                        <option key={sw.id} value={sw.id}>{sw.name}</option>
-                      ))}
-                    </select>
-                    {errors?.special_woreda && <p className="text-xs text-red-600 mt-1">{errors.special_woreda[0]}</p>}
-                  </div>
-                )}
+                        <Input size="large" className="rounded-lg" />
+                    </Form.Item>
 
-                {((adminType === ADMIN_TYPE_ZONE && formData.woreda) ||
-                  (adminType === ADMIN_TYPE_SPECIAL_WOREDA && formData.special_woreda)) && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Kebele</label>
-                    <select
-                      value={formData.kebele}
-                      onChange={(e) => handleFieldChange('kebele', e.target.value)}
-                      className={inputClass}
+                    <Form.Item
+                        name="phone_number"
+                        label={<span className="text-slate-700 dark:text-slate-300 font-medium">{t('phone_number', 'Phone Number')}</span>}
+                        rules={[{ required: true, message: t('phone_number_required', 'Phone Number is required.') }]}
                     >
-                      <option value="">Select a Kebele</option>
-                      {kebeles.map((k) => (
-                        <option key={k.id} value={k.id}>{k.name}</option>
-                      ))}
-                    </select>
-                    {errors?.kebele && <p className="text-xs text-red-600 mt-1">{errors.kebele[0]}</p>}
-                  </div>
-                )}
-              </>
-            )}
+                        <Input size="large" className="rounded-lg" />
+                    </Form.Item>
 
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium py-2.5 rounded-md transition"
-            >
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </form>
+                    <Form.Item
+                        name="language_preference"
+                        label={<span className="text-slate-700 dark:text-slate-300 font-medium">{t('language_preference', 'Language Preference')}</span>}
+                        rules={[{ required: true, message: t('language_preference_required', 'Language Preference is required.') }]}
+                    >
+                        <Select size="large" className="rounded-lg">
+                            <Select.Option value="EN">English</Select.Option>
+                            <Select.Option value="AM">አማርኛ</Select.Option>
+                        </Select>
+                    </Form.Item>
+
+                    <div className="flex justify-end gap-3 mt-8">
+                        <Button onClick={handleEditCancel} size="large" className="rounded-lg">
+                            {t('cancel', 'Cancel')}
+                        </Button>
+                        <Button 
+                            type="primary" 
+                            htmlType="submit" 
+                            loading={updating}
+                            size="large"
+                            className="bg-emerald-600 hover:bg-emerald-500 rounded-lg border-none"
+                        >
+                            {t('save_changes', 'Save Changes')}
+                        </Button>
+                    </div>
+                </Form>
+            </Modal>
         </div>
-
-        <div className="bg-white rounded-lg shadow p-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Change Password</h2>
-
-          {pwMessage && (
-            <div className="mb-4 p-3 bg-primary-50 text-primary-700 text-sm rounded">{pwMessage}</div>
-          )}
-          {pwErrors?.non_field_errors && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded">{pwErrors.non_field_errors.join(' ')}</div>
-          )}
-
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <TextField
-              label="Current Password" type="password"
-              value={pwForm.current_password}
-              onChange={(v) => setPwForm((p) => ({ ...p, current_password: v }))}
-              error={pwErrors?.current_password?.[0]}
-            />
-            <TextField
-              label="New Password" type="password"
-              value={pwForm.new_password}
-              onChange={(v) => setPwForm((p) => ({ ...p, new_password: v }))}
-              error={pwErrors?.new_password?.[0]}
-            />
-            <TextField
-              label="Confirm New Password" type="password"
-              value={pwForm.confirm_new_password}
-              onChange={(v) => setPwForm((p) => ({ ...p, confirm_new_password: v }))}
-              error={pwErrors?.confirm_new_password?.[0]}
-            />
-            <button
-              type="submit"
-              disabled={pwSaving}
-              className="w-full bg-gray-700 hover:bg-gray-800 disabled:opacity-50 text-white font-medium py-2.5 rounded-md transition"
-            >
-              {pwSaving ? 'Changing...' : 'Change Password'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+    );
 }
-
-const inputClass =
-  'w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
-
-function TextField({ label, value, onChange, error, type = 'text' }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputClass}
-      />
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
-    </div>
-  );
-}
-
-export default ProfilePage;
